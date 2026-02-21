@@ -1,8 +1,7 @@
-# Node dependencies
+
 node_modules/
 
-# Environment variables
+
 .env
 
-# Optional: ignore all env variants
 .env.*
