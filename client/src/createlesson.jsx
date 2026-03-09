@@ -5,6 +5,7 @@ import './createlesson.css'
 import Layout from './components/Layout.jsx'
 
 export default function createlesson() {
+    let ball;
     
     const [code, setCode] = useState("");
     const currentcode=useRef("");
@@ -73,11 +74,11 @@ output screen
     
 <button>Run</button>
 </div>
-<button onClick={() => {console.log(timeline);clearInterval(interval.current)}}>save</button>
+{/* <button onClick={() => {console.log(timeline);clearInterval(interval.current)}}>save</button> */}
 
-    
+    <button onClick={() => {saveLesson();clearInterval(interval.current)}}>save</button>
     </div>
-<button onClick={() => {saveLesson();clearInterval(interval.current)}}>save</button>
+
     </div>
     </div>
     
