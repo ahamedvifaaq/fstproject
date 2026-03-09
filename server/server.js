@@ -5,6 +5,7 @@ import cors from "cors";
 import connectDB from "./config/db.js";
 import cookieParser from 'cookie-parser';
 import authRoutes from './routes/authroutes.js'
+import courseRoutes from './routes/courseroutes.js'
 import passport from "./config/passport.js";
 
 const app = express();
@@ -18,5 +19,7 @@ const PORT = process.env.PORT || 5000;
 
 
 app.use("/api/auth", authRoutes);
+app.use("/api", courseRoutes);
+
 
 app.listen(PORT, () => console.log(`Server started on port ${PORT}`));

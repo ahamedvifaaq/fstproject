@@ -28,6 +28,13 @@ router.get(
 
 
 router.get("/profile", protect, (req, res) => {
+  if(req.user.role === "instructor") {
+    return res.json({ message: "Welcome Instructor!", userId: req.user._id });
+  }
+  if(req.user.role === "admin") {
+    return res.json({ message: "Welcome admin!", userId: req.user._id });
+  }
+
   res.json({ message: "Protected route accessed", userId: req.userId });
 });
 

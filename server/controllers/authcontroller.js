@@ -8,7 +8,7 @@ import { generateTokens } from "../utils/tokenService.js";
 import bcrypt from "bcryptjs";
 
 export const register = async (req, res) => {
-  const { username, email, password } = req.body;
+  const { username, email, password ,role} = req.body;
  /* console.log("Register attempt:", { username, email });*/
 
   try {
@@ -22,7 +22,7 @@ export const register = async (req, res) => {
     }
 
     const hashed = await bcrypt.hash(password, 10);
-    const newUser = await User.create({ username, email, password: hashed });
+    const newUser = await User.create({ username, email, password: hashed ,role});
 
    /* console.log("User registered:", newUser._id);*/
     res.status(201).json({ message: "User registered successfully" });
