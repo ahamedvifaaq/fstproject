@@ -42,7 +42,8 @@ export const addModule = async (req, res) => {
         }
     };
     export const createLesson = async (req, res) => {
-        const { courseId, moduleId, title, language, videoLength} = req.body;
+        //console.log("Received lesson creation request with body:", req.body);
+        const { courseId, moduleId, title, language, videoLength, timeline } = req.body;
         try {
             if (!courseId || !moduleId || !title) {
                 return res.status(400).json({ message: "Course ID, Module ID, and title are required" });
@@ -58,13 +59,28 @@ export const addModule = async (req, res) => {
             const newLesson = await Lesson.create({
                 title,
                 language,
-                videoLength
+                videoLength,
+                timeline
             });
             module.lessons.push({ lessonId: newLesson._id, title: newLesson.title });
             await course.save();
             res.status(200).json({ message: "Lesson created successfully", lessonId: newLesson._id });
         } catch (err) {
             console.error("Create lesson error:", err);
+            res.status(500).json({ message: "Server error", error: err.message });
+        }
+    };
+    export const getLesson = async (req, res) => {
+        //console.log("Received request for lesson with ID:", req.params.id);
+        const lessonId  = req.params.id;
+        try {
+            const lesson = await Lesson.findById(lessonId);
+            if (!lesson) {
+                return res.status(404).json({ message: "Lesson not found" });
+            }
+            res.status(200).json(lesson);
+        } catch (err) {
+            console.error("Get lesson error:", err);
             res.status(500).json({ message: "Server error", error: err.message });
         }
     };
