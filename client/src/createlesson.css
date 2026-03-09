@@ -1,4 +1,7 @@
-
+.createLesson-container{
+    background-color: #1e1e1e;
+   color:  blueviolet;
+}
 .createlesson{
     color: white;
     font-size: 30px;
@@ -8,6 +11,7 @@
     height: 100vh;
 }
 .output{
+    
     color: black;
     font-size: 20px;
     display: flex;
@@ -16,4 +20,53 @@
     height: 100vh;
     width: 100%;
     border: 1px solid black;
+    border-radius: 5px;
+    background-color: rgb(255, 255, 255);
+    position: relative;   /* important */
+
+}
+.output-run{
+    position: absolute;
+    top: 10px;
+    right: 10px;
+}
+
+.output-run button{
+    padding: 6px 14px;
+    background-color: #22c55e;
+    border: none;
+    color: white;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.output-run button:hover{
+    background-color: #16a34a;
+}
+.editor-container{
+    position: relative;
+    
+    width: 1000px;
+   
+}
+
+.toolbar{
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    z-index: 10;
+}
+
+.toolbar button{
+    margin-left: 10px;
+    padding: 6px 14px;
+    background-color: #1e90ff;
+    border: none;
+    color: white;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.toolbar button:hover{
+    background-color: #0d6efd;
 }
