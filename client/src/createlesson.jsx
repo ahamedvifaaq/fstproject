@@ -4,6 +4,7 @@ import React from 'react'
 import './createlesson.css'
 
 export default function createlesson() {
+    let a2;
     let a;
     let b;
     let c;
