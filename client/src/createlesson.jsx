@@ -7,6 +7,7 @@ import Layout from './components/Layout.jsx'
 export default function createlesson() {
     let ball;
     
+    let a3;
     const [code, setCode] = useState("");
     const currentcode=useRef("");
     const [timeline, setTimeline] = useState([]);
