@@ -2,7 +2,7 @@ import { Editor } from '@monaco-editor/react'
 import { useEffect, useState ,useRef} from 'react'
 import React from 'react'
 import './createlesson.css'
-// import Sidebar from "./components/Sidebar.jsx";
+import Sidebar from "./components/sidebar.jsx";
 
 export default function createlesson() {
 
@@ -27,7 +27,7 @@ if(isplayaing){
         setTimeline([...timeline]);
     }, 1000);}
         return () => clearInterval(interval);
-    },[]);
+    },[isplayaing]);
     async function saveLesson(){
         const lessonData = {   "courseId": "69adbf0c0372a72251d090a7",
     "moduleId": "69adc7beb127b00b4d40a532",
@@ -80,7 +80,7 @@ if(isplayaing){
             clearInterval(interval.current);
             setTimeline([]);
             setCode("");
-            setCurrentTime(-1);
+            setcurrentTime(-1);
             setisplaying(false);
 
 
@@ -120,12 +120,7 @@ if(isplayaing){
         <button>Run</button>
     </div>
 
-    <button onClick={() => {
-        console.log(timeline);
-        clearInterval(interval.current)
-    }}>
-        save
-    </button>
+    
 
     </div>
 
