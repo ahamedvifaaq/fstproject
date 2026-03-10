@@ -13,17 +13,19 @@ export default function createlesson() {
     const currentcode=useRef("");
     const [timeline, setTimeline] = useState([]);
     let interval=useRef(null);
-    let currentTime=-1;
+    
+    var [currentTime,setCurrentTime]=useState(-1);
 
     useEffect(() => {
 if(isplayaing){
         interval.current=setInterval(() => {
+            setCurrentTime(currentTime++);
 
         setCode(currentcode.current);
         console.log(currentcode.current);
 
         const newEntry = {
-            timestamp: ++currentTime,
+            timestamp: currentTime+1,
             codeSnapshot: currentcode.current
         };
 
@@ -70,11 +72,18 @@ if(isplayaing){
         <button onClick={()=>setisplaying(false)}>Pause</button>
         <button onClick={()=>{
             clearInterval(interval.current);
+            setTimeline([]);
+            setCode("");
+            setCurrentTime(-1);
+            setisplaying(false);
+
 
         }}>reset</button>
         <button style={{marginRight:10}}
         onClick={() => {
         console.log(timeline);
+        setisplaying(false);
+
         clearInterval(interval.current)}}
         >Save</button>
     </div>
