@@ -1,29 +1,33 @@
 .sidebar{
-    width:220px;
+    position:fixed;
+    top:0;
+    left:0;
+    width:190px;
     height:100vh;
     background-color:#111;
-    color:white;
-    padding:20px;
-    position:fixed;
-    left:0;
-    top:0;
+    
+    z-index:999;
 }
 
-.logo{
-    margin-bottom:30px;
-}
 
 .sidebar ul{
-    list-style:none;
-    padding:0;
+    list-style: none;
+    padding: 0;
 }
 
 .sidebar li{
-    padding:12px;
-    cursor:pointer;
-    border-radius:6px;
+    padding: 8px;
+    cursor: pointer;
 }
 
 .sidebar li:hover{
-    background-color:#333;
+    background-color: #333;
+}
+
+.submenu{
+    margin-left: 10px;
+}
+
+.submenu2{
+    margin-left: 20px;
 }

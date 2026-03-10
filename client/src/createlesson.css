@@ -1,30 +1,121 @@
+/* Main Page */
+
+    body{
+    margin: 0;
+    background-color: #1e1e1e;
+}
+/* Hamburger Menu */
+/* Top bar */
+/* sidebar overlay */
+
+.sidebar-overlay{
+    position:absolute;
+    top:40px;
+    left:0;
+    z-index:2000;
+}
+
+.top-bar{
+    display:flex;
+    align-items:center;
+    gap:15px;
+    margin-bottom:15px;
+}
+
+/* Hamburger */
+
+.hamburger{
+    font-size:28px;
+    cursor:pointer;
+    color:white;
+    position:relative;
+    z-index:5000;   /* must be higher than sidebar */
+}
+
+/* Lesson title */
+
+.lesson-title{
+    color:#a855f7;
+    margin:0;
+}
+
+
 .createLesson-container{
     background-color: #1e1e1e;
-   color:  blueviolet;
-}
-.createlesson{
     color: white;
-    font-size: 30px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
+ /* margin-left: 190px;   adjusted for smaller sidebar */
+    padding: 20px;
+    min-height: 100vh;
 }
-.output{
-    
-    color: black;
-    font-size: 20px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-    width: 100%;
-    border: 1px solid black;
-    border-radius: 5px;
-    background-color: rgb(255, 255, 255);
-    position: relative;   /* important */
 
+
+/* Page Title */
+
+
+
+
+/* Main Layout */
+
+.createlesson{
+    display: flex;
+    gap: 20px;
 }
+
+
+/* ================= EDITOR ================= */
+
+.editor-container{
+    position: relative;
+    width: 75%;   /* increased editor size */
+    /* border-radius: 8px; */
+    /* overflow: hidden; */
+}
+
+
+
+/* Toolbar */
+
+.toolbar{
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    margin-top: 20px;
+    margin-right: 400px;
+    z-index: 10;
+}
+
+.toolbar button{
+    margin-left: 8px;
+    padding: 6px 14px;
+    background-color: #3b82f6;
+    border: none;
+    color: white;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.toolbar button:hover{
+    background-color: #2563eb;
+}
+
+
+/* ================= OUTPUT ================= */
+
+.output{
+    width: 25%;  /* reduced output width */
+    min-height: 1000px;
+    border-radius: 8px;
+    background-color: white;
+    color: black;
+    margin-top: 0;
+    padding: 15px;
+    position: relative;
+}
+
+
+
+/* Run Button */
+
 .output-run{
     position: absolute;
     top: 10px;
@@ -43,30 +134,11 @@
 .output-run button:hover{
     background-color: #16a34a;
 }
-.editor-container{
-    position: relative;
-    
-    width: 1000px;
-   
-}
-
-.toolbar{
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    z-index: 10;
-}
-
-.toolbar button{
-    margin-left: 10px;
-    padding: 6px 14px;
-    background-color: #1e90ff;
-    border: none;
-    color: white;
-    border-radius: 4px;
-    cursor: pointer;
-}
-
-.toolbar button:hover{
-    background-color: #0d6efd;
+.sidebar{
+    position:relative;
+    width:190px;
+    background-color:#111;
+    color:white;
+    padding:15px;
+    border-radius:10px;
 }
