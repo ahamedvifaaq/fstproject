@@ -3,10 +3,16 @@ import { mockLesson } from "./mockdata";
 import React, { useState, useEffect } from "react";
 
 export default function Lesson() {
-
+var lessonData;
   const [code, setCode] = useState("");
+  async function loadLesson() {
+    const response = await fetch("http://localhost:5000/api/lesson/69af042e1c0a6fad058d6f4e");
+     lessonData = await response.json();
+    console.log("Fetched lesson data:", lessonData);
+  }
 
   useEffect(() => {
+    loadLesson();
 
     let currentTime=-1;
     const interval = setInterval(() => {
@@ -20,14 +26,14 @@ export default function Lesson() {
         setCode("");
       }
       
-      const currentStep = [...mockLesson.timeline]
+      const currentStep = [...lessonData.timeline]
         .reverse()
         .find((step) => step.timestamp <= currentTime);
 
       if (currentStep) {
         setCode(currentStep.codeSnapshot);
       }
-      if (currentTime === mockLesson.videoLength) {
+      if (currentTime === lessonData.videoLength+30) {
         clearInterval(interval);
         
       }
@@ -40,7 +46,8 @@ export default function Lesson() {
   }, []);
 
   return (
-    <div>
+    <div >
+      {/* <button onClick={()=>loadLesson()}>Load Lesson</button> */}
       <Editor
       defaultValue="hello"
         value={code}

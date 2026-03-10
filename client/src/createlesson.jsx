@@ -2,42 +2,48 @@ import { Editor } from '@monaco-editor/react'
 import { useEffect, useState ,useRef} from 'react'
 import React from 'react'
 import './createlesson.css'
-import Sidebar from "./components/Sidebar.jsx";
+// import Sidebar from "./components/Sidebar.jsx";
 
 export default function createlesson() {
 
     const [showSidebar,setShowSidebar]=useState(false)
 
+    let ball;
+    let a3;
     const [code, setCode] = useState("");
     const [isplayaing,setisplaying]=useState(false);
     const currentcode=useRef("");
     const [timeline, setTimeline] = useState([]);
     let interval=useRef(null);
-    
-    var [currentTime,setCurrentTime]=useState(-1);
-
+    var [currentTime,setcurrentTime]=useState(-1);
     useEffect(() => {
 if(isplayaing){
         interval.current=setInterval(() => {
-            setCurrentTime(currentTime++);
-
+    setcurrentTime(currentTime++);
         setCode(currentcode.current);
         console.log(currentcode.current);
-
-        const newEntry = {
-            timestamp: currentTime+1,
-            codeSnapshot: currentcode.current
-        };
-
+        const newEntry = {timestamp: currentTime, codeSnapshot: currentcode.current};
         timeline.push(newEntry);
         setTimeline([...timeline]);
-
     }, 1000);}
-
-        return () => clearInterval(interval.current);
-
-    },[isplayaing]);
-
+        return () => clearInterval(interval);
+    },[]);
+    async function saveLesson(){
+        const lessonData = {   "courseId": "69adbf0c0372a72251d090a7",
+    "moduleId": "69adc7beb127b00b4d40a532",
+    "title":"helloworld",
+    "language":"python",
+    "videoLength":currentTime+1
+};
+        const response = await fetch('http://localhost:5000/api/createlesson', {
+            method: 'POST',
+            headers: {  'Content-Type': 'application/json' },
+            body: JSON.stringify({ ...lessonData, timeline: timeline })
+        });
+        if(response.status === 200){
+            alert('Lesson saved successfully!');
+        }
+    }
 
   return (
 
@@ -124,6 +130,7 @@ if(isplayaing){
     </div>
 
     </div>
+
     </div>
 
   )

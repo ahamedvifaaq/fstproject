@@ -3,7 +3,7 @@ import mongoose from 'mongoose';
 // Each "frame" in the video-like timeline
 const timelineEventSchema = new mongoose.Schema({
     timestamp: { type: Number, required: true },      // seconds from start
-    codeSnapshot: { type: String, required: true },      // full editor content at this point
+    codeSnapshot: { type: String },      // full editor content at this point
     explanationText: { type: String, default: '' },         // instructor note / subtitle
     highlightLines: [{ type: Number }],                    // lines to visually highlight
     editable: { type: Boolean, default: false },     // can student edit at this point?
