@@ -1,12 +1,12 @@
 
-import Lesson from './lesson';
+import Lesson from './Lesson';
 import Createlesson from './createlesson';
 function App() {
 
   return (
     <>
-{/* <Lesson></Lesson>  */}
-<Createlesson></Createlesson>
+<Lesson></Lesson>  
+{/* <Createlesson></Createlesson> */}
       </>
   )
 }
