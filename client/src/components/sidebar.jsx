@@ -1,39 +1,45 @@
 import React, { useState } from "react";
 import "./sidebar.css";
+import { Link } from "react-router-dom";
 
-export default function Sidebar() {
 
-  const [showCourses, setShowCourses] = useState(false);
-  const [showModules, setShowModules] = useState(false);
+export default function Sidebar({title,styles}) {
+      const [showSidebar,setShowSidebar]=useState(false);
+  
+
+  
 
   return (
-    <div className="sidebar">
+<><div className="top-bar">
+                  
+                      <div 
+                          className="hamburger"
+                          onClick={()=>setShowSidebar(!showSidebar)}
+                          onMouseOver={()=>setShowSidebar(!showSidebar)}
+                          style={{color:"gray",padding:"7px" }}
+                         
+                      >
+                          ☰
+                      </div>
+                  
+                       {showSidebar && (
+                      <div className="sidebar-overlay" onMouseLeave={()=>setShowSidebar(!showSidebar)} >
+                        <div className="sidebar">
+      
 
-      <h3 className="sidebar-title"><pre>      Menu</pre></h3>
+
+      <h3 className="sidebar-title"><pre style={{padding:7
+      }}>      Menu</pre></h3>
 
       <ul>
+        <br></br>
 
-        <li>Home</li>
+        <li><Link to="/Home" style={{color:"white",textDecoration:"none"}}>Home</Link></li>
 
-        <li onClick={() => setShowCourses(!showCourses)}>
-          Courses
+        <li>
+          <Link to="/courses" style={{color:"white",textDecoration:"none"}}>Courses</Link>
         </li>
 
-        {showCourses && (
-          <ul className="submenu">
-
-            <li onClick={() => setShowModules(!showModules)}>
-              Modules
-            </li>
-
-            {showModules && (
-              <ul className="submenu2">
-                <li>Lesson</li>
-              </ul>
-            )}
-
-          </ul>
-        )}
 
         <li>Profile</li>
 
@@ -42,5 +48,16 @@ export default function Sidebar() {
       </ul>
 
     </div>
+                      </div>
+                    )}
+                  
+                      <h2 className="lesson-title" style={{marginLeft:10,color:styles}}>
+                          {title}
+                      </h2>
+                  
+                  </div>
+
+    
+    </>
   );
 }

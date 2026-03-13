@@ -6,7 +6,8 @@ import Sidebar from "./components/sidebar.jsx";
 
 export default function createlesson() {
 
-    const [showSidebar,setShowSidebar]=useState(false)
+    const [showSidebar,setShowSidebar]=useState(false);
+    const [content,setContent]=useState("");
 
     let ball;
     let a3;
@@ -28,6 +29,26 @@ if(isplayaing){
     }, 1000);}
         return () => clearInterval(interval);
     },[isplayaing]);
+
+    async function runCode(){
+        const response = await fetch('http://localhost:5000/api/output', {
+            method: 'POST',
+            headers: {  'Content-Type': 'application/json' },
+            body:JSON.stringify({code:currentcode.current})
+        });
+        if(response.status === 200){
+        const data = await response.json();
+        setContent(data.output);
+        console.log(data);
+        }
+
+
+    
+    
+    }
+
+
+
     async function saveLesson(){
         const lessonData = {   "courseId": "69adbf0c0372a72251d090a7",
     "moduleId": "69adc7beb127b00b4d40a532",
@@ -49,28 +70,7 @@ if(isplayaing){
 
     <div className="createLesson-container">
 
-        {/* HAMBURGER */}
-       <div className="top-bar">
-
-    <div 
-        className="hamburger"
-        onClick={()=>setShowSidebar(!showSidebar)}
-       
-    >
-        ☰
-    </div>
-
-     {showSidebar && (
-    <div className="sidebar-overlay" onMouseLeave={()=>setShowSidebar(!showSidebar)} >
-      <Sidebar/>
-    </div>
-  )}
-
-    <h2 className="lesson-title">
-        Module name: lesson name
-    </h2>
-
-</div>
+       <Sidebar title={"Module : python"} styles={"#a855f7"} />
 
     <div className='createlesson'>
         <div className='toolbar'>
@@ -89,6 +89,7 @@ if(isplayaing){
         onClick={() => {
         console.log(timeline);
         setisplaying(false);
+        saveLesson();
 
         clearInterval(interval.current)}}
         >Save</button>
@@ -117,7 +118,10 @@ if(isplayaing){
     output screen
 
     <div className="output-run">
-        <button>Run</button>
+        <button onClick={()=>runCode()}>Run</button>
+    </div>
+    <div className="output-content">
+        {content}
     </div>
 
     
