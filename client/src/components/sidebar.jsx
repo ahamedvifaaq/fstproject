@@ -1,10 +1,10 @@
 import React, { useState } from "react";
 import "./sidebar.css";
+import { Link } from "react-router-dom";
 
 export default function Sidebar() {
 
-  const [showCourses, setShowCourses] = useState(false);
-  const [showModules, setShowModules] = useState(false);
+  
 
   return (
     <div className="sidebar">
@@ -15,25 +15,10 @@ export default function Sidebar() {
 
         <li>Home</li>
 
-        <li onClick={() => setShowCourses(!showCourses)}>
-          Courses
+        <li>
+          <Link to="/courses" style={{color:"white",textDecoration:"none"}}>Courses</Link>
         </li>
 
-        {showCourses && (
-          <ul className="submenu">
-
-            <li onClick={() => setShowModules(!showModules)}>
-              Modules
-            </li>
-
-            {showModules && (
-              <ul className="submenu2">
-                <li>Lesson</li>
-              </ul>
-            )}
-
-          </ul>
-        )}
 
         <li>Profile</li>
 

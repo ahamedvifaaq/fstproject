@@ -84,3 +84,35 @@ export const addModule = async (req, res) => {
             res.status(500).json({ message: "Server error", error: err.message });
         }
     };
+
+export const runCode = async (req,res) => {
+    console.log("Received code execution request with code:", req.body.code);
+  const responce = await fetch(
+    "https://ce.judge0.com/submissions?wait=true",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        language_id: 63,
+        source_code: req.body.code,
+        stdin: "Alice"
+      })
+    }
+  );
+
+  const data = await responce.json();
+  return res.status(200).json({ output: data.stdout });
+};
+
+export const getAllCourses = async (req, res) => {  
+    console.log("Received request to get all courses");
+    try {
+        const courses = await Course.find();
+        res.status(200).json(courses);
+    } catch (err) {
+        console.error("Get all courses error:", err);
+        res.status(500).json({ message: "Server error", error: err.message });
+    }
+};

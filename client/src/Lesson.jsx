@@ -6,7 +6,7 @@ export default function Lesson() {
 var lessonData;
   const [code, setCode] = useState("");
   async function loadLesson() {
-    const response = await fetch("http://localhost:5000/api/lesson/69af042e1c0a6fad058d6f4e");
+    const response = await fetch("http://localhost:5000/api/lesson/69b06b1dd635acf10a1c6172");
      lessonData = await response.json();
     console.log("Fetched lesson data:", lessonData);
   }
