@@ -10,13 +10,14 @@ export default function Sidebar({title,styles}) {
   
 
   return (
-<><div className="top-bar">
+  <>
+    <div className="top-bar">
                   
-                      <div 
+                    <div 
                           className="hamburger"
                           onClick={()=>setShowSidebar(!showSidebar)}
                           onMouseOver={()=>setShowSidebar(!showSidebar)}
-                          style={{color:"gray",padding:"7px" }}
+                          style={{color:"grey",padding:"7px" }}
                          
                       >
                           ☰

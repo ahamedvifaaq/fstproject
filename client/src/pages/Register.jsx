@@ -64,7 +64,7 @@ export default function Register() {
 
 };
 
-  return (
+  return (<div className='container'>
     <div className="auth-container">
       <div className="auth-box register-box">
         <div className="auth-header">
@@ -159,6 +159,7 @@ export default function Register() {
           </Link>
         </p>
       </div>
+    </div>
     </div>
   )
 }

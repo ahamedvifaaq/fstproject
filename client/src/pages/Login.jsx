@@ -35,6 +35,7 @@ export default function Login() {
   };
 
   return (
+    <div className='container'>
     <div className="auth-container">
       <div className="auth-box login-box">
 
@@ -108,6 +109,7 @@ export default function Login() {
         </p>
 
       </div>
+    </div>
     </div>
   );
 }

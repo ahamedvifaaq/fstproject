@@ -6,6 +6,7 @@ import Courses from './pages/Courses';
 import Login from './pages/Login';
 import Register from './pages/Register';
 
+import Modules from './pages/Modules';
 function App() {
 
   return (
@@ -19,6 +20,7 @@ function App() {
         <Route path="/" element={<Createlesson />} />
         <Route path="/Lesson" element={< Lesson/>} />
          <Route path="/courses" element={<Courses />} />
+          <Route path="/course/:courseId/modules" element={<Modules />} />
       </Routes>
     
   
