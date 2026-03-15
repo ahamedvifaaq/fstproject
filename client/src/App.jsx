@@ -3,6 +3,7 @@ import Lesson from './Lesson';
 import Createlesson from './createlesson';
 import { BrowserRouter,Routes,Route } from 'react-router-dom';
 import Courses from './pages/Courses';
+import Modules from './pages/Modules';
 function App() {
 
   return (
@@ -15,6 +16,7 @@ function App() {
         <Route path="/" element={<Createlesson />} />
         <Route path="/Home" element={< Lesson/>} />
          <Route path="/courses" element={<Courses />} />
+          <Route path="/course/:courseId/modules" element={<Modules />} />
       </Routes>
     
   
