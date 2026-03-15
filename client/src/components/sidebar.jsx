@@ -10,7 +10,7 @@ export default function Sidebar({title,styles}) {
   
 
   return (
-<><div className="top-bar">
+<gir
                   
                       <div 
                           className="hamburger"
