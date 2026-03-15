@@ -10,13 +10,14 @@ export default function Sidebar({title,styles}) {
   
 
   return (
-<gir
+  <>
+    <div className="top-bar">
                   
-                      <div 
+                    <div 
                           className="hamburger"
                           onClick={()=>setShowSidebar(!showSidebar)}
                           onMouseOver={()=>setShowSidebar(!showSidebar)}
-                          style={{color:"gray",padding:"7px" }}
+                          style={{color:"grey",padding:"7px" }}
                          
                       >
                           ☰
@@ -34,7 +35,7 @@ export default function Sidebar({title,styles}) {
       <ul>
         <br></br>
 
-        <li><Link to="/Home" style={{color:"white",textDecoration:"none"}}>Home</Link></li>
+        <li><Link to="/Lesson" style={{color:"white",textDecoration:"none"}}>Home</Link></li>
 
         <li>
           <Link to="/courses" style={{color:"white",textDecoration:"none"}}>Courses</Link>
@@ -43,7 +44,7 @@ export default function Sidebar({title,styles}) {
 
         <li>Profile</li>
 
-        <li>Logout</li>
+        <li><Link to="/" style={{color:"white",textDecoration:"none"}}>Logout</Link></li>
 
       </ul>
 

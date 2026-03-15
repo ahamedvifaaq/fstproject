@@ -1,41 +1,41 @@
-import express from 'express';
-import { register, login, refreshToken, logout } from "../controllers/authcontroller.js"
-import { protect } from '../middleware/auth.js';
-import passport from 'passport';
-import { googleCallback } from '../controllers/authcontroller.js';
+import express from "express";
+import { register, login, refreshToken, logout, googleCallback } from "../controllers/authcontroller.js";
+import { protect } from "../middleware/auth.js";
+import passport from "passport";
 
 const router = express.Router();
-
-/*router.use((req, res, next) => {
-  console.log("Auth route accessed:", req.path);
-  next();
-});*/
 
 router.post("/register", register);
 router.post("/login", login);
 router.post("/refresh", refreshToken);
 router.post("/logout", logout);
 
-router.get("/google",
-  passport.authenticate("google",{scope:["profile","email"]})
+// Google auth
+router.get(
+  "/google",
+  passport.authenticate("google", { scope: ["profile", "email"] })
 );
 
 router.get(
   "/google/callback",
-  passport.authenticate("google",{session:false}),
+  passport.authenticate("google", { session: false }),
   googleCallback
 );
 
-
+// Protected route example
 router.get("/profile", protect, (req, res) => {
-  if(req.user.role === "instructor") {
+  if (req.user.role === "instructor") {
     return res.json({ message: "Welcome Instructor!", userId: req.user._id });
   }
-  if(req.user.role === "admin") {
-    return res.json({ message: "Welcome admin!", userId: req.user._id });
+
+  if (req.user.role === "admin") {
+    return res.json({ message: "Welcome Admin!", userId: req.user._id });
   }
 
-  res.json({ message: "Protected route accessed", userId: req.userId });
+  res.json({
+    message: "Protected route accessed",
+    userId: req.user._id
+  });
 });
 
 export default router;
