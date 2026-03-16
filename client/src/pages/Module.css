@@ -1,0 +1,57 @@
+.modules-page{
+  background:#0f172a;
+  min-height:100vh;
+  padding:40px;
+  color:white;
+}
+
+.course-title{
+  font-size:28px;
+  margin-bottom:30px;
+}
+
+.modules-container{
+  max-width:800px;
+}
+
+.module-card{
+  background:#1e293b;
+  border-radius:8px;
+  margin-bottom:12px;
+  overflow:hidden;
+  box-shadow:0 4px 10px rgba(0,0,0,0.3);
+}
+
+.module-header{
+  padding:16px;
+  font-size:18px;
+  font-weight:600;
+  cursor:pointer;
+  display:flex;
+  align-items:center;
+  gap:10px;
+  transition:background 0.2s;
+}
+
+.module-header:hover{
+  background:#334155;
+}
+
+.arrow{
+  font-size:14px;
+}
+
+.lessons-list{
+  background:#020617;
+}
+
+.lesson-item{
+  padding:14px 30px;
+  border-top:1px solid #1e293b;
+  cursor:pointer;
+  transition:background 0.2s;
+}
+
+.lesson-item:hover{
+  background:#1e293b;
+}
