@@ -16,5 +16,8 @@
   "bugs": {
     "url": "https://github.com/ahamedvifaaq/fstproject/issues"
   },
-  "homepage": "https://github.com/ahamedvifaaq/fstproject#readme"
+  "homepage": "https://github.com/ahamedvifaaq/fstproject#readme",
+  "dependencies": {
+    "axios": "^1.13.6"
+  }
 }
