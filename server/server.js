@@ -1,25 +1,48 @@
-
 import "dotenv/config";
 import express from "express";
 import cors from "cors";
+import cookieParser from "cookie-parser";
+
 import connectDB from "./config/db.js";
-import cookieParser from 'cookie-parser';
-import authRoutes from './routes/authroutes.js'
-import courseRoutes from './routes/courseroutes.js'
 import passport from "./config/passport.js";
 
+import authRoutes from "./routes/authroutes.js";
+import courseRoutes from "./routes/courseroutes.js";
+
 const app = express();
+
+/* ---------- Connect Database ---------- */
 connectDB();
-app.use(passport.initialize());
+
+/* ---------- Middlewares ---------- */
+
+// allow frontend connection
 app.use(cors());
+
+// parse JSON body
 app.use(express.json());
+
+// cookie parser (needed for refresh token)
 app.use(cookieParser());
 
-const PORT = process.env.PORT || 5000;
+// passport for Google auth
+app.use(passport.initialize());
 
+/* ---------- Routes ---------- */
 
 app.use("/api/auth", authRoutes);
 app.use("/api", courseRoutes);
 
+/* ---------- Test Route ---------- */
 
-app.listen(PORT, () => console.log(`Server started on port ${PORT}`));
+app.get("/", (req, res) => {
+  res.send("API Running...");
+});
+
+/* ---------- Start Server ---------- */
+
+const PORT = process.env.PORT || 5000;
+
+app.listen(PORT, () => {
+  console.log(`Server started on port ${PORT}`);
+});
