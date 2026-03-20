@@ -43,7 +43,7 @@ export const addModule = async (req, res) => {
     }
 };
 export const createLesson = async (req, res) => {
-    //console.log("Received lesson creation request with body:", req.body);
+    
     const { courseId, moduleId, title, language, videoLength, timeline } = req.body;
     try {
         if (!courseId || !moduleId || !title) {
@@ -72,7 +72,7 @@ export const createLesson = async (req, res) => {
     }
 };
 export const getLesson = async (req, res) => {
-    //console.log("Received request for lesson with ID:", req.params.id);
+  
     const lessonId = req.params.id;
     try {
         const lesson = await Lesson.findById(lessonId);

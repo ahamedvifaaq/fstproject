@@ -9,7 +9,7 @@ const progressSchema = new mongoose.Schema({
     timeSpent: { type: Number, default: 0 },           // seconds spent on lesson
     lastTimestamp: { type: Number, default: 0 }            // last timeline position (for resume)
 }, {
-    timestamps: true
+    timestamps: true 
 });
 
 // One progress record per user per lesson

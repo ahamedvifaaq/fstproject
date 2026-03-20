@@ -8,6 +8,7 @@ export default function Modules() {
     const [modules, setModules] = useState([]);
     const [open,setOpen]=useState(false);
     const navigate=useNavigate();
+    const [activateLesson,setActiveLesson]=useState(null);
     useEffect(() => {
         console.log("Fetching modules for course ID:", courseId);
                 fetch(`http://localhost:5000/api/course/${courseId}/modules`)
@@ -20,16 +21,14 @@ export default function Modules() {
           navigate(`/lesson/${lessonId}`)
         }
   return (
-     <div className="modules-page">
-
-      
+     <div className="timeline-page">
 
       {modules.map((module, index) => (
 
-        <div key={index} className="module">
+        <div key={index} className="module-block">
 
           <div
-            className="module-header"
+            className="module-title"
             onClick={() =>
               setOpen(open=== index ? null : index)
             }
@@ -39,18 +38,22 @@ export default function Modules() {
 
           {open === index && (
 
-            <div className="lessons">
+            <div className="lesson-list">
 
               {[...new Map(module.lessons.map(l => [String(l.lessonId?._id || l.lessonId), l])).values()].map((lesson, i) => (
 
                 <div
                   key={i}
-                  className="lesson"
+                  className="lesson-row"
                   onClick={() =>
                     openLesson(lesson.lessonId._id)
                   }
                 >
-                  ▶ {lesson.title}
+                  <div className="circle"></div>
+                  <div className='lesson-content'>
+                      <span className='lesson-title'>{lesson.title}</span>
+                      <span>{lesson.videoLength}</span>
+                  </div>
                 </div>
 
               ))}
