@@ -4,7 +4,11 @@ import React, { useState, useEffect ,useRef, use} from "react";
 import './createlesson.css';
 import './lesson.css';
 import Sidebar from "./components/sidebar.jsx";
+import { useParams } from "react-router-dom";
+import { FaPlay, FaPause } from "react-icons/fa";
 export default function Lesson() {
+  const lessonID=useParams().lessonID;
+  const mtitle=useParams().mtitle;
   var [lessonData, setLessonData] = useState(mockLesson);
   const [code, setCode] = useState("");
   const [showSidebar,setShowSidebar]=useState(false);
@@ -18,7 +22,7 @@ export default function Lesson() {
   
   
   async function loadLesson() {
-    const response = await fetch("http://localhost:5000/api/lesson/69b06b1dd635acf10a1c6172");
+    const response = await fetch(`http://localhost:5000/api/lesson/${lessonID}`);
      lessonData = await response.json();
     setLessonData(lessonData);
     console.log("Fetched lesson data:", lessonData);
@@ -52,7 +56,7 @@ export default function Lesson() {
     
 
     interval.current = setInterval(() => {
-        if(started&&play.current){
+        if(started&& lessonData.videoLength>currentTime){
       currentTime =
         (currentTime+1);
         setcurrentTime(currentTime);
@@ -72,7 +76,7 @@ export default function Lesson() {
         currentcode.current=currentStep.codeSnapshot;
       }
       if (currentTime === lessonData.videoLength) {
-        clearInterval(interval.current);
+        //clearInterval(interval.current);
         play.current=false;
         
       }}
@@ -104,10 +108,10 @@ export default function Lesson() {
   return (<>
   {!overlay && (
         <div className="overlay">
-          <div className="play-btn" onClick={() => setStarted(true)}></div>
+          <div className="play-btn" onClick={() => {setStarted(true);setoverlay(true)}}></div>
         </div>
       )}
-    <Sidebar title={"Module name: lesson name"} styles={"#a855f7"} />
+    <Sidebar title={` ${mtitle}:${lessonData.title}`} styles={"#a855f7"} />
       <div className="createLesson-container">
       
               {/* HAMBURGER */}
@@ -137,11 +141,40 @@ export default function Lesson() {
     <div className="output-content" style={{ whiteSpace: "pre-line" }}>
         {content}
     </div>
+    
 
     
 
     </div>
     </div>
+    </div>
+    <div  className="timeline">
+      <div className="timer">
+        <button onClick={()=>{setStarted((prev)=>!prev);setoverlay(true)}} style={{marginRight:10,backgroundColor:started?"#ef4444":"#22c55e",border:"none",color:"white",padding:"6px 14px",borderRadius:"4px",cursor:"pointer"}}> {started ? <FaPause size={20} /> : <FaPlay size={20} />}</button>
+        <div style={{color:"white",marginLeft:10,marginRight:10}}>
+        {Math.floor(currentTime/60)}:{currentTime%60<10?`0${currentTime%60}`:currentTime%60}
+        {/* 5:00 */}
+      </div>
+        <input
+        type="range"
+        min="0"
+        max={lessonData.videoLength}
+        value={currentTime}
+        onChange={(e) => {if(started){setStarted(false);console.log(e.target.value);setcurrentTime(Number(e.target.value)-1);setStarted(false);setTimeout(()=>setStarted(true),100)}
+        else{setcurrentTime(Number(e.target.value)-1);console.log(e.target.value);}
+      }
+      
+      }
+        style={{ width: "100%" }}
+      />
+      <div style={{color:"white",marginLeft:10}}>
+       {Math.floor(lessonData.videoLength/60)}:{lessonData.videoLength%60<10?`0${lessonData.videoLength%60}`:lessonData.videoLength%60}
+
+        {/* 5:00 */}
+      </div>
+      </div>
+      
+
     </div>
     </>
     
