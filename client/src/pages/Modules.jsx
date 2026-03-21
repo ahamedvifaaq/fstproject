@@ -17,8 +17,9 @@ export default function Modules() {
                 .catch(error => console.error("Error fetching modules:", error));
         }, []);
 
-        const openLesson=(lessonId)=>{
-          navigate(`/lesson/${lessonId}`)
+        const openLesson=(lessonId,title)=>{
+          console.log("Opening lesson with ID:", lessonId);
+          navigate(`/lesson/${lessonId}/${title}`)
         }
   return (
      <div className="timeline-page">
@@ -41,12 +42,12 @@ export default function Modules() {
             <div className="lesson-list">
 
               {[...new Map(module.lessons.map(l => [String(l.lessonId?._id || l.lessonId), l])).values()].map((lesson, i) => (
-
+                console.log("Rendering lesson:", lesson),
                 <div
                   key={i}
                   className="lesson-row"
                   onClick={() =>
-                    openLesson(lesson.lessonId._id)
+                    openLesson(lesson.lessonId ,module.title)
                   }
                 >
                   <div className="circle"></div>

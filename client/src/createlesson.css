@@ -103,7 +103,7 @@
 
 .output{
     width: 25%;  /* reduced output width */
-    min-height: 1000px;
+    height: auto;
     border-radius: 8px;
     background-color: white;
     color: black;
