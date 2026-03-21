@@ -8,7 +8,7 @@ import passport from "./config/passport.js";
 
 import authRoutes from "./routes/authroutes.js";
 import courseRoutes from "./routes/courseroutes.js";
-
+import profileroutes from"./routes/profileRoutes.js"
 const app = express();
 
 /* ---------- Connect Database ---------- */
@@ -32,6 +32,7 @@ app.use(passport.initialize());
 
 app.use("/api/auth", authRoutes);
 app.use("/api", courseRoutes);
+app.use("/api/user",profileroutes);
 
 /* ---------- Test Route ---------- */
 

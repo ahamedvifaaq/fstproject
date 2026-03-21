@@ -1,6 +1,8 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose'
 
-const reviewSchema = new mongoose.Schema({
+const { Schema, model } = mongoose;
+
+const reviewSchema = new Schema({
     courseId: { type: mongoose.Schema.Types.ObjectId, ref: 'Course', required: true },
     userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
 
@@ -11,7 +13,8 @@ const reviewSchema = new mongoose.Schema({
 });
 
 // One review per user per course
-reviewSchema.index({ courseId: 1, userId: 1 }, { unique: true });
-reviewSchema.index({ courseId: 1 });
+//reviewSchema.index({ courseId: 1, userId: 1 }, { unique: true });
+//reviewSchema.index({ courseId: 1 });
 
-module.exports = mongoose.model('Review', reviewSchema);
+
+export default model("Review", reviewSchema);
