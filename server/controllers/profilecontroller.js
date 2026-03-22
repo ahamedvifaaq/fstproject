@@ -61,38 +61,3 @@ export const changePassword=async(req,res)=>{
     }
 }
 
-export const getEnrolledCourses=async(req,res)=>{
-    try{
-        const user = await User.findById(req.user.id)
-            .populate("enrolledCourses.courseId", "title thumbnail");
-
-        res.json(user.enrolledCourses);
-
-    }catch(err){
-        res.status(500).json({message:err.message});
-
-    }
-}
-
-export const getCompletedCourses=async(req,res)=>{
-    try{
-        const user = await User.findById(req.user.id)
-            .populate("enrolledCourses.courseId", "title thumbnail");
-
-        const completed=user.enrolledCourses.filter((course)=>course.progress===100)
-        res.json(completed);
-    }catch(err){
-         res.status(500).json({message:err.message});
-    }
-}
-
-export const getUserReviews = async (req, res) => {
-    try {
-        const reviews = await Review.find({ userId: req.user.id })
-            .populate("courseId", "title");
-
-        res.json(reviews);
-    } catch (err) {
-        res.status(500).json({ message: err.message });
-    }
-};
