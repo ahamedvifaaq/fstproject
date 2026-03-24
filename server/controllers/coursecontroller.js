@@ -44,7 +44,7 @@ export const addModule = async (req, res) => {
 };
 export const createLesson = async (req, res) => {
     
-    const { courseId, moduleId, title, language, videoLength, timeline } = req.body;
+    const { courseId, moduleId, title, language, videoLength, timeline, audioUrl } = req.body;
     try {
         if (!courseId || !moduleId || !title) {
             return res.status(400).json({ message: "Course ID, Module ID, and title are required" });
@@ -61,7 +61,9 @@ export const createLesson = async (req, res) => {
             title,
             language,
             videoLength,
-            timeline
+            timeline,
+            audioUrl
+
         });
         module.lessons.push({ lessonId: newLesson._id, title: newLesson.title });
         await course.save();

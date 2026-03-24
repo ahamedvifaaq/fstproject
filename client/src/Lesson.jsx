@@ -19,6 +19,7 @@ export default function Lesson() {
   let interval=useRef(null);
   let play =useRef(true);
   const currentcode=useRef("");
+  const sliderRef = useRef(null);
   
   
   async function loadLesson() {
@@ -50,6 +51,27 @@ export default function Lesson() {
       window.removeEventListener("keydown", handleKeyDown);
     };
   }, []);
+
+  useEffect(() => {
+  let frame;
+  let last = currentTime;
+
+  const animate = () => {
+    if (!sliderRef.current) return;
+
+    let displayed = parseFloat(sliderRef.current.value) || 0;
+    let diff = currentTime - displayed;
+    displayed += diff * 0.5;
+
+    sliderRef.current.value = displayed;
+
+    frame = requestAnimationFrame(animate);
+  };
+
+  animate();
+
+  return () => cancelAnimationFrame(frame);
+}, [currentTime]);
   
   useEffect(() => {
     
@@ -156,10 +178,12 @@ export default function Lesson() {
         {/* 5:00 */}
       </div>
         <input
+        ref={sliderRef}
         type="range"
+        defaultValue={0}
         min="0"
         max={lessonData.videoLength}
-        value={currentTime}
+        // value={currentTime}
         onChange={(e) => {if(started){setStarted(false);console.log(e.target.value);setcurrentTime(Number(e.target.value)-1);setStarted(false);setTimeout(()=>setStarted(true),100)}
         else{setcurrentTime(Number(e.target.value)-1);console.log(e.target.value);}
       }
