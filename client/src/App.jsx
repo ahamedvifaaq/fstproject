@@ -5,7 +5,8 @@ import { BrowserRouter,Routes,Route } from 'react-router-dom';
 import Courses from './pages/Courses';
 import Login from './pages/Login';
 import Register from './pages/Register';
-import Profile from "./pages/Profile"import Audio from './Audio';
+import Profile from "./pages/Profile"
+import Audio from './Audio';
 import Player from './audioplayer';
 
 import Modules from './pages/Modules';
