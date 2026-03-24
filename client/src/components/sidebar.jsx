@@ -42,7 +42,10 @@ export default function Sidebar({title,styles}) {
         </li>
 
 
-        <li>Profile</li>
+        <li>
+            <Link to="/profile" style={{color:"white",textDecoration:"none"}}>Profile</Link>
+
+        </li>
 
         <li><Link to="/" style={{color:"white",textDecoration:"none"}}>Logout</Link></li>
 

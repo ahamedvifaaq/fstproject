@@ -5,7 +5,7 @@ import { BrowserRouter,Routes,Route } from 'react-router-dom';
 import Courses from './pages/Courses';
 import Login from './pages/Login';
 import Register from './pages/Register';
-import Audio from './Audio';
+import Profile from "./pages/Profile"import Audio from './Audio';
 import Player from './audioplayer';
 
 import Modules from './pages/Modules';
@@ -25,7 +25,6 @@ function App() {
         <Route path="/lesson/:lessonID/:mtitle" element={< Lesson/>} />
          <Route path="/courses" element={<Courses />} />
           <Route path="/course/:courseId/modules" element={<Modules />} />
-          <Route path="/createlesson" element={<Createlesson />} />
       </Routes>
     
   

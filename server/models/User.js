@@ -52,6 +52,17 @@ const userSchema = new Schema(
         default: "student"
     },
 
+    bio:{
+         type: String, 
+         default: '' 
+    },
+    
+    avatarUrl: {
+         type: String, 
+         default: null 
+    },
+
+    
     googleId: {
         type: String
     },
