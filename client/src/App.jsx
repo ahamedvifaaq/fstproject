@@ -1,40 +1,33 @@
 
 import Lesson from './Lesson';
-import Createlesson from './createlesson';
-import { BrowserRouter,Routes,Route } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import Courses from './pages/Courses';
 import Login from './pages/Login';
 import Register from './pages/Register';
-import Profile from "./pages/Profile"
-import Audio from './Audio';
-import Player from './audioplayer';
-
+import Profile from "./pages/Profile";
 import Modules from './pages/Modules';
+import ProtectedRoute from "./components/protectedroutes";
+import PublicRoute from "./components/PublicRoute";
+
 function App() {
 
   return (
     <>
-    
-{/*<Lesson></Lesson> */}
-{/* <Audio></Audio> */}
-{/* <Player></Player> */}
-{/*  */}
-    
       <Routes>
-         <Route path="/" element={<Login />} />
-        <Route path="/register" element={<Register />} />
-        <Route path="/" element={<Createlesson />} />
-        <Route path="/lesson/:lessonID/:mtitle" element={< Lesson/>} />
-         <Route path="/courses" element={<Courses />} />
-          <Route path="/course/:courseId/modules" element={<Modules />} />
-      </Routes>
-    
-  
-        
+        <Route path="/" element={<PublicRoute><Login /></PublicRoute>} />
+        <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
+        <Route path="/register" element={<PublicRoute><Register /></PublicRoute>} />
 
-   
-      </>
+        {/* Protected routes - redirect to / (login) if not logged in */}
+        <Route path="/courses" element={<ProtectedRoute><Courses /></ProtectedRoute>} />
+        <Route path="/course/:courseId/modules" element={<ProtectedRoute><Modules /></ProtectedRoute>} />
+        <Route path="/lesson/:lessonID/:mtitle" element={<ProtectedRoute><Lesson /></ProtectedRoute>} />
+        <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+
+        {/* Catch-all - redirect unknown routes to login */}
+        <Route path="*" element={<Navigate to="/" />} />
+      </Routes>
+    </>
   )
 }
-
 export default App
