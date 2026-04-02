@@ -20,6 +20,47 @@ export default function Lesson() {
   let play =useRef(true);
   const currentcode=useRef("");
   const sliderRef = useRef(null);
+
+  const audioRef = useRef(null);
+
+  const getAudioUrl = (url) => {
+    if (!url || url === "not working") return null;
+    if (url.startsWith("http") || url.startsWith("blob:")) return url;
+    return `http://localhost:5000${url.startsWith("/") ? "" : "/"}${url}`;
+  };
+
+  const playAudio = (url) => {
+    const fullUrl = getAudioUrl(url);
+    if (!fullUrl) {
+      console.warn("Invalid audio URL:", url);
+      return;
+    }
+    const cleanUrlPart = fullUrl.replace("http://localhost:5000", "");
+    if (!audioRef.current || !audioRef.current.src.endsWith(cleanUrlPart)) {
+      if (audioRef.current) audioRef.current.pause();
+      audioRef.current = new Audio(fullUrl);
+      audioRef.current.onerror = (e) => console.error("Audio loading error for:", fullUrl, e);
+    }
+    
+    if (currentTime > 0) {
+      if (audioRef.current.readyState >= 1) { // HAVE_METADATA and up
+        audioRef.current.currentTime = currentTime;
+      } else {
+        audioRef.current.addEventListener("loadedmetadata", () => {
+          audioRef.current.currentTime = currentTime;
+        }, { once: true });
+      }
+    }
+
+    const playPromise = audioRef.current.play();
+    if (playPromise !== undefined) {
+      playPromise.catch(e => console.error("Audio playback error:", e));
+    }
+  };
+
+  const pauseAudio = () => {
+    audioRef.current?.pause();
+  };
   
   
   async function loadLesson() {
@@ -30,6 +71,12 @@ export default function Lesson() {
   }
   useEffect(() => {
     loadLesson();
+
+    
+
+
+
+
     const handleKeyDown = (e) => {
       if (e.code === "Space") {
         e.preventDefault(); // stops page scroll
@@ -74,6 +121,9 @@ export default function Lesson() {
 }, [currentTime]);
   
   useEffect(() => {
+    console.log(lessonData.audioUrl);
+    if(started)playAudio(lessonData.audioUrl);
+    else{pauseAudio();}
     
     
 

@@ -29,6 +29,7 @@ export default function createlesson() {
   const [isPaused, setIsPaused] = useState(false);
   const [audioURL, setAudioURL] = useState(null);
   var url=useRef("");
+  var uploadData=useRef("");
 
     useEffect(() => {
 if(isplayaing){
@@ -42,6 +43,17 @@ if(isplayaing){
     }, 1000);}
         return () => clearInterval(interval.current);
     },[isplayaing]);
+
+    // Get the best supported format
+const getSupportedMimeType = () => {
+  const types = [
+    "audio/webm;codecs=opus",
+    "audio/webm",
+    "audio/ogg;codecs=opus",
+    "audio/mp4",
+  ];
+  return types.find(type => MediaRecorder.isTypeSupported(type)) || "";
+};
 
     async function runCode(){
         const response = await fetch('http://localhost:5000/api/output', {
@@ -59,6 +71,7 @@ if(isplayaing){
     
     
     }
+    
   
 
 
@@ -85,19 +98,23 @@ if(isplayaing){
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
 
-      const recorder = new MediaRecorder(stream);
-      mediaRecorderRef.current = recorder;
+      const mimeType = getSupportedMimeType();
+    console.log("Using mimeType:", mimeType); // check what it picks
 
+    const recorder = new MediaRecorder(stream, 
+      mimeType ? { mimeType } : {}  // only pass if supported
+    );
+    mediaRecorderRef.current = recorder;
       recorder.ondataavailable = (e) => {
         if (e.data.size > 0) {
           audioChunksRef.current.push(e.data);
         }
       };
 
-      recorder.onstop = () => {
-        const blob = new Blob(audioChunksRef.current, {
-          type: "audio/webm",
-        });
+      recorder.onstop =async () => {
+        const blob = new Blob(audioChunksRef.current, { 
+        type: mimeType || "audio/webm"  // ✅ use detected mimeType
+      });
 
         const au = URL.createObjectURL(blob);
         url.current = au;
@@ -105,7 +122,8 @@ if(isplayaing){
          console.log("Recording stopped. Audio URL:", url.current);
          console.log("au",au);
          if(!isreset.current){
-          saveLesson(au);
+           await uploaddatas(blob,mimeType);
+          saveLesson(uploadData.current);
          }
          
 
@@ -151,6 +169,24 @@ if(isplayaing){
       setIsPaused(false);
     }
   };
+  const uploaddatas = async (audioblob, mimeType) => {
+  // pick correct extension based on mimeType
+  const ext = mimeType?.includes("ogg") ? "ogg" 
+             : mimeType?.includes("mp4") ? "mp4" 
+             : "webm";
+
+  const formData = new FormData();
+  formData.append("audio", audioblob, `recording.${ext}`); // ✅ correct extension
+
+  const uploadRes = await fetch("http://localhost:5000/api/upload", {
+    method: "POST",
+    body: formData,
+  });
+
+  const data = await uploadRes.json();
+  uploadData.current=data.fileUrl;
+  console.log( "url ",uploadData.current);
+};
 
   return (
 

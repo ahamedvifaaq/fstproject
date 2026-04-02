@@ -1,5 +1,6 @@
 import Course from "../models/Course.js";
 import Lesson from "../models/Lesson.js";
+import multer from "multer"
 
 export const createCourse = async (req, res) => {
     const { title, description, difficulty, price, tags, instructorId } = req.body;
@@ -56,7 +57,11 @@ export const createLesson = async (req, res) => {
         const module = course.modules.id(moduleId);
         if (!module) {
             return res.status(404).json({ message: "Module not found" });
+        
         }
+
+        
+
         const newLesson = await Lesson.create({
             title,
             language,
@@ -132,4 +137,23 @@ export const getCourseModules = async (req, res) => {
         console.error("Get course modules error:", err);
         res.status(500).json({ message: "Server error", error: err.message });
     }
+
+
+};
+export const uploadAudio = (req, res) => {
+  try {
+    console.log("REQ.FILE:", req.file);
+
+    if (!req.file) {
+      return res.status(400).json({ error: "No file uploaded" });
+    }
+
+    res.json({
+      fileUrl: `http://localhost:5000/uploads/${req.file.filename}`
+    });
+
+  } catch (err) {
+    console.error("UPLOAD ERROR:", err); // 👈 THIS IS CRITICAL
+    res.status(500).json({ error: err.message });
+  }
 };
