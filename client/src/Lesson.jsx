@@ -64,7 +64,12 @@ export default function Lesson() {
   
   
   async function loadLesson() {
-    const response = await fetch(`http://localhost:5000/api/lesson/${lessonID}`);
+    const token = localStorage.getItem("accessToken");
+    const response = await fetch(`http://localhost:5000/api/lesson/${lessonID}`, {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    });
      lessonData = await response.json();
     setLessonData(lessonData);
     console.log("Fetched lesson data:", lessonData);
@@ -161,9 +166,13 @@ export default function Lesson() {
 
   }, [started]);
   async function runCode(){
+        const token = localStorage.getItem("accessToken");
         const response = await fetch('http://localhost:5000/api/output', {
             method: 'POST',
-            headers: {  'Content-Type': 'application/json' },
+            headers: {  
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
             body:JSON.stringify({code:currentcode.current})
         });
         if(response.status === 200){

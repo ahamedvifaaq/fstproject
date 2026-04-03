@@ -5,13 +5,18 @@ import { useNavigate} from "react-router-dom";
 export default function Courses() { 
     const [showSidebar,setShowSidebar]=useState(false);
     const [courses, setCourses] = useState([]);
+    
     const navigate = useNavigate();
     useEffect(() => {
-            fetch(`http://localhost:5000/api/courses`)
-
-            .then(response => response.json())
-            .then(data =>{ console.log(data); setCourses(data)})
-            .catch(error => console.error("Error fetching courses:", error));
+        const token = localStorage.getItem("accessToken");
+        fetch(`http://localhost:5000/api/courses`, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        })
+        .then(response => response.json())
+        .then(data =>{ console.log(data.courses); setCourses(data.courses);localStorage.setItem("role",data.role)})
+        .catch(error => console.error("Error fetching courses:", error));
     }, []);
     const startCourse = (courseId) => {
         
@@ -25,7 +30,7 @@ export default function Courses() {
     return (
         
         <div className="courses-page">
-             <Sidebar title={"All Coureses"} styles={"red"} />
+             <Sidebar title={"All Coureses"} styles={"red"} /><div>ksdjfkj</div>
             <h1 style={{marginLeft:10}}></h1>
             <div className="courses-grid">
                 {courses.map(course => (

@@ -4,6 +4,7 @@ import ProfileHeader from "../components/Profile/ProfileHeader";
 import EditModal from "../components/Profile/EditModal";
 import PasswordModal from "../components/Profile/PasswordModal";
 import "../components/Profile/Profile.css";
+import Sidebar from "../components/sidebar";
 
 export default function Profile() {
   const [user, setUser] = useState(null);
@@ -20,8 +21,10 @@ export default function Profile() {
 
   if (!user) return <p>Loading...</p>;
 
-  return (
+  return (<>
+    <Sidebar title={"Profile"} styles={"red"} />
     <div className="profile-container">
+      
       <div className="profile-wrapper">
       <ProfileHeader
         user={user}
@@ -42,5 +45,6 @@ export default function Profile() {
         <PasswordModal close={() => setShowPassword(false)} />
       )}
     </div>
+    </>
   );
 }

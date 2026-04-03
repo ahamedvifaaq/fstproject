@@ -10,6 +10,7 @@ export default function Register() {
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [errors, setErrors] = useState({})
+  const [role, setRole] = useState('')
   const navigate = useNavigate()
 
   const validateForm = () => {
@@ -47,7 +48,8 @@ export default function Register() {
       const res = await registerUser({
         username,
         email,
-        password
+        password,
+        role
       });
 
       alert(res.data.message);
@@ -100,7 +102,21 @@ export default function Register() {
             />
             {errors.email && <span className="error-text">{errors.email}</span>}
           </div>
-
+         <div className="form-group">
+            <label htmlFor="role" className="form-label">Role</label>
+            <select
+              id="role"
+              value={role}
+              onChange={(e) => setRole(e.target.value)}
+              className={`form-input ${errors.role ? 'input-error' : ''}`}
+              required
+            >
+              <option value="">Select a role</option>
+              <option value="student">Student</option>
+              <option value="instructor">Instructor</option>
+            </select>
+            {errors.role && <span className="error-text">{errors.role}</span>}
+          </div>
           <div className="form-group">
             <label htmlFor="register-password" className="form-label">Password</label>
             <div className="password-input-group">

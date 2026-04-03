@@ -11,11 +11,16 @@ export default function Modules() {
     const [activateLesson,setActiveLesson]=useState(null);
     useEffect(() => {
         console.log("Fetching modules for course ID:", courseId);
-                fetch(`http://localhost:5000/api/course/${courseId}/modules`)
-                .then(response => response.json())
-                .then(data =>{ console.log(data); setModules(Array.isArray(data) ? data : []); })
-                .catch(error => console.error("Error fetching modules:", error));
-        }, []);
+        const token = localStorage.getItem("accessToken");
+        fetch(`http://localhost:5000/api/course/${courseId}/modules`, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        })
+        .then(response => response.json())
+        .then(data =>{ console.log(data); setModules(Array.isArray(data) ? data : []); })
+        .catch(error => console.error("Error fetching modules:", error));
+    }, []);
 
         const openLesson=(lessonId,title)=>{
           console.log("Opening lesson with ID:", lessonId);

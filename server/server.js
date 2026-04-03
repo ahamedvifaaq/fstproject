@@ -16,6 +16,8 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 
+
+
 const app = express();
 
 /* ---------- Connect Database ---------- */
@@ -46,7 +48,11 @@ app.use("/uploads", (req, res, next) => {
 app.use("/api/auth", authRoutes);
 app.use("/api", courseRoutes);
 app.use("/api/user",profileroutes);
+<<<<<<< HEAD
 //app.use("/api/admin", adminRoutes);
+=======
+
+>>>>>>> abc4fa9da3665409c9fe4a0b9cd2b3a0ac639777
 
 /* ---------- Test Route ---------- */
 
