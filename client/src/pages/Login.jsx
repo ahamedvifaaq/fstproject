@@ -24,7 +24,7 @@ export default function Login() {
 
       localStorage.setItem("accessToken", res.data.accessToken);
 
-      navigate("/Courses");
+      navigate("/courses");
 
     } catch (err) {
 
