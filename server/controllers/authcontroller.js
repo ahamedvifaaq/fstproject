@@ -67,7 +67,7 @@ export const login = async (req, res) => {
       return res.status(401).json({ message: "Invalid credentials" });
     }
 
-    const { accessToken, refreshToken } = generateTokens(user._id);
+    const { accessToken, refreshToken } = generateTokens(user._id, user.role);
 
     user.refreshToken = refreshToken;
     await user.save();
@@ -81,6 +81,7 @@ export const login = async (req, res) => {
         id: user._id,
         username: user.username,
         email: user.email,
+        role:user.role,
         accessToken
       });
 
@@ -100,9 +101,9 @@ export const refreshToken = async (req, res) => {
 
     if (err) return res.sendStatus(403);
 
-    const { accessToken } = generateTokens(decoded.userId);
+    const { accessToken } = generateTokens(decoded.userId, decoded.role);
 
-    res.json({ accessToken });
+    res.json({ accessToken, role: decoded.role });
 
   });
 };
@@ -125,7 +126,7 @@ export const googleCallback = async (req, res) => {
 
     const user = req.user;
 
-    const { accessToken, refreshToken } = generateTokens(user._id);
+    const { accessToken, refreshToken } = generateTokens(user._id, user.role);
 
     user.refreshToken = refreshToken;
 
@@ -136,7 +137,7 @@ export const googleCallback = async (req, res) => {
         httpOnly: true,
         sameSite: "strict"
       })
-      .redirect("http://localhost:5173/Courses");
+      .redirect(`http://localhost:5173/courses?token=${accessToken}&role=${user.role}`);
 
   } catch (err) {
 
