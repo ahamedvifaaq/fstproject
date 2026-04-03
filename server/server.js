@@ -16,6 +16,8 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 
+import profileroutes from "./routes/profileRoutes.js";
+import adminRoutes from "./routes/adminRoutes.js";
 const app = express();
 
 /* ---------- Connect Database ---------- */
@@ -46,6 +48,7 @@ app.use("/uploads", (req, res, next) => {
 app.use("/api/auth", authRoutes);
 app.use("/api", courseRoutes);
 app.use("/api/user",profileroutes);
+app.use("/api/admin", adminRoutes);
 
 /* ---------- Test Route ---------- */
 
