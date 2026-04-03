@@ -4,7 +4,7 @@ import bcrypt from "bcryptjs";
 import { generateTokens } from "../utils/tokenService.js";
 
 export const register = async (req, res) => {
-  const { username, email, password, role ,bio,avatarUrl} = req.body;
+  const { username, email, password, role ,bio,avatarUrl } = req.body;
   console.log("Register request received:", { username, email, role });
 
   try {

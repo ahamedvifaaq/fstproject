@@ -23,8 +23,9 @@ export default function Login() {
       });
 
       localStorage.setItem("accessToken", res.data.accessToken);
+      localStorage.setItem("role", res.data.role);
 
-      navigate("/Courses");
+      navigate("/courses");
 
     } catch (err) {
 

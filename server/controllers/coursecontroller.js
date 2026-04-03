@@ -118,7 +118,7 @@ export const getAllCourses = async (req, res) => {
     console.log("Received request to get all courses");
     try {
         const courses = await Course.find();
-        res.status(200).json(courses);
+        res.status(200).json({courses,role: req.user.role});
     } catch (err) {
         console.error("Get all courses error:", err);
         res.status(500).json({ message: "Server error", error: err.message });

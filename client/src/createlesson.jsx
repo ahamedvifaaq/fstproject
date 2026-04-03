@@ -56,9 +56,13 @@ const getSupportedMimeType = () => {
 };
 
     async function runCode(){
+        const token = localStorage.getItem("accessToken");
         const response = await fetch('http://localhost:5000/api/output', {
             method: 'POST',
-            headers: {  'Content-Type': 'application/json' },
+            headers: {  
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
             body:JSON.stringify({code:currentcode.current})
         });
         if(response.status === 200){
@@ -84,9 +88,13 @@ const getSupportedMimeType = () => {
     "videoLength":currentTime.current+1,
     "audioUrl":audiou|| "not working"//not coming correct url simply coming null
 };
+        const token = localStorage.getItem("accessToken");
         const response = await fetch('http://localhost:5000/api/createlesson', {
             method: 'POST',
-            headers: {  'Content-Type': 'application/json' },
+            headers: {  
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
             body: JSON.stringify({ ...lessonData, timeline: timeline })
         });
         if(response.status === 200){
@@ -180,6 +188,9 @@ const getSupportedMimeType = () => {
 
   const uploadRes = await fetch("http://localhost:5000/api/upload", {
     method: "POST",
+    headers: {
+        'Authorization': `Bearer ${localStorage.getItem("accessToken")}`
+    },
     body: formData,
   });
 
