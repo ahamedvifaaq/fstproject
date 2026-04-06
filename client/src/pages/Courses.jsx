@@ -7,7 +7,7 @@ export default function Courses() {
     const [courses, setCourses] = useState([]);
     const navigate = useNavigate();
     useEffect(() => {
-            fetch(`http://localhost:5000/api/courses`)
+            fetch(`http://localhost:5000/api/courses`,{method:"GET",headers:{"Authorization":`Bearer ${localStorage.getItem("accessToken")}`}})
 
             .then(response => response.json())
             .then(data =>{ console.log(data); setCourses(data)})

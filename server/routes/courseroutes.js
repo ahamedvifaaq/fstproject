@@ -3,7 +3,7 @@ import { createCourse , addModule ,createLesson, getLesson,runCode,getAllCourses
 import { protect } from "../middleware/auth.js";
 const router = express.Router();
 
-router.post("/createcourse", createCourse);
+router.post("/createcourse",protect, createCourse);
 router.post("/addmodule", addModule);
 router.post("/createlesson", createLesson);
 router.get("/courses", getAllCourses);
