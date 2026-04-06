@@ -66,11 +66,12 @@ import "./Addcourse.css";
 
     return (
         <div className="addcourse">
-            <h1>Add Course Page</h1>
+            
 
             <form onSubmit={handleSubmit}
-                style={{ display: "flex", flexDirection: "column", gap: 20, width: "400px", margin: "0 auto" }}>
 
+                style={{ display: "flex", flexDirection: "column", gap: 20, width: "400px", margin: "0 auto" }}>
+               <h1>Add Course Page</h1>
                 <input name="title" placeholder="Title" onChange={handleChange} />
                 <textarea name="description" placeholder="Description" onChange={handleChange} />
 

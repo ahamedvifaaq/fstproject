@@ -71,8 +71,8 @@ export default function Modules() {
           <button className='btn' onClick={() => setMoverlay(true)}>Add Module</button>
         </div>
       )}
-      <div className='overlay' style={{display: overlay ? 'block' : 'none'}}>
-        <div className='overlay-content'>
+      <div className='overlay' onClick={() => setOverlay(false)}  style={{display: overlay ? 'flex' : 'none'}}>
+        <div className='overlay-content'  onClick={(e) => e.stopPropagation()} >
           <h2>Add Lesson</h2>
           <input 
             type="text" 
@@ -92,8 +92,8 @@ export default function Modules() {
       </div>
       
      
-      <div className='overlay' style={{display: moverlay ? 'block' : 'none'}}>
-        <div className='overlay-content'>
+      <div className='overlay' onClick={() => setMoverlay(false)}  style={{display: moverlay ? 'flex' : 'none'}}>
+        <div className='overlay-content'  onClick={(e) => e.stopPropagation()} >
           <h2>Add Module</h2>
           <input 
             type="text" 
