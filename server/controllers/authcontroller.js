@@ -137,7 +137,7 @@ export const googleCallback = async (req, res) => {
         httpOnly: true,
         sameSite: "strict"
       })
-      .redirect(`http://localhost:5173/courses?token=${accessToken}&role=${user.role}`);
+      .redirect(`http://localhost:5173/google-callback?token=${accessToken}&role=${user.role}`);
 
   } catch (err) {
 

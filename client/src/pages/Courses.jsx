@@ -38,7 +38,7 @@ export default function Courses() {
     return (
         
         <div className="courses-page">
-             <Sidebar title={"All Coureses"} styles={"red"} />
+             <Sidebar title={"All Courses"} styles={"red"} />
              {localStorage.getItem("role")==="instructor" && (
                  <div className="createcourse"><button className="btn-primary" type="button" onClick={() => navigate(`/addcourse/${localStorage.getItem("userId")}`)}>Add Course </button></div>
                  

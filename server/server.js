@@ -26,7 +26,10 @@ connectDB();
 /* ---------- Middlewares ---------- */
 
 // allow frontend connection
-app.use(cors());
+app.use(cors({
+  origin: "http://localhost:5173",
+  credentials: true
+}));
 
 // parse JSON body
 app.use(express.json());
@@ -48,7 +51,6 @@ app.use("/uploads", (req, res, next) => {
 app.use("/api/auth", authRoutes);
 app.use("/api", courseRoutes);
 app.use("/api/user",profileroutes);
-
 
 /* ---------- Test Route ---------- */
 
