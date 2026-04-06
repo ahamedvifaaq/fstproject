@@ -96,6 +96,47 @@ export const getLesson = async (req, res) => {
 };
 
 export const runCode = async (req, res) => {
+    const LANGUAGE_ID_MAP = {
+  plaintext: 43,
+
+  // Core languages
+  javascript: 63,
+  typescript: 74,
+  python: 71,
+  java: 62,
+
+  // C family
+  c: 50,
+  cpp: 54,
+  csharp: 51,
+
+  // Backend / system
+  go: 60,
+  rust: 73,
+
+  // Scripting
+  bash: 46,
+  shell: 46,
+  php: 68,
+  ruby: 72,
+  perl: 85,
+  lua: 64,
+
+  // JVM / functional
+  kotlin: 78,
+  scala: 81,
+  clojure: 86,
+
+  // Others
+  swift: 83,
+  r: 80,
+  sql: 82,
+  pascal: 67,
+  haskell: 61,
+  fsharp: 87,
+  vb: 84,
+  "objective-c": 79
+};
     console.log("Received code execution request with code:", req.body.code);
     const responce = await fetch(
         "https://ce.judge0.com/submissions?wait=true",
@@ -105,7 +146,7 @@ export const runCode = async (req, res) => {
                 "Content-Type": "application/json"
             },
             body: JSON.stringify({
-                language_id: 63,
+                language_id: LANGUAGE_ID_MAP[req.body.language] || 63, // default to JavaScript 
                 source_code: req.body.code,
                 stdin: "Alice"
             })

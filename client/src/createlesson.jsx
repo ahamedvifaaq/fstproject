@@ -64,7 +64,7 @@ const getSupportedMimeType = () => {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`
             },
-            body:JSON.stringify({code:currentcode.current})
+            body:JSON.stringify({code:currentcode.current, language: language})
         });
         if(response.status === 200){
         const data = await response.json();
@@ -270,7 +270,7 @@ const getSupportedMimeType = () => {
         height="600px"
         width="100%"
         onMount={(editor) => {editorRef.current = editor;}}
-        defaultLanguage="javascript"
+        language={language}
         onChange={(value) =>currentcode.current=value}
         />
 

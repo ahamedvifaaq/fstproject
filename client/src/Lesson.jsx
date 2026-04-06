@@ -213,7 +213,7 @@ export default function Lesson() {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${token}`
       },
-      body: JSON.stringify({ code: currentcode.current })
+      body: JSON.stringify({ code: currentcode.current,language: lessonData.language })
     });
     if (response.status === 200) {
       const data = await response.json();
@@ -245,7 +245,7 @@ export default function Lesson() {
                 theme="vs-dark"
                 height="600px"
                 width="100%"
-                defaultLanguage="python"
+                language={lessonData.language || "javascript"}
                 onChange={(value) => currentcode.current = value}
               />
             </div>

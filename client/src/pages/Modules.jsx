@@ -13,6 +13,35 @@ export default function Modules() {
     const[lessoninfo,setLessonInfo]=useState({title:"",videoLength:"",language:"",timeline:[],moduleId:"",courseId:courseId,audioUrl:""});
     const [activateLesson,setActiveLesson]=useState(null);
     const[moduleinfo,setmoduleInfo]=useState({title:"",courseId:courseId});
+    // const LANGUAGES = ["javascript", "python", "cpp", "java"];
+    const LANGUAGES = [
+  "javascript",
+  "typescript",
+  "python",
+  "java",
+  "c",
+  "cpp",
+  "csharp",
+  "go",
+  "rust",
+  "php",
+  "ruby",
+  "swift",
+  "kotlin",
+  "r",
+  "scala",
+  "sql",
+  "shell",
+  "pascal",
+  "perl",
+  "lua",
+  "haskell",
+  "clojure",
+  "fsharp",
+  "vb",
+  "objective-c"
+];
+    
     useEffect(() => {
         console.log("Fetching modules for course ID:", courseId);
         const token = localStorage.getItem("accessToken");
@@ -80,12 +109,17 @@ export default function Modules() {
             value={lessoninfo.title}
             onChange={(e) => setLessonInfo({...lessoninfo, title: e.target.value})}
           />
-          <input 
+          <select onChange={(e) => setLessonInfo({...lessoninfo, language: e.target.value})} value={lessoninfo.language}> 
+        {LANGUAGES.map((lang) => (
+          <option key={lang}>{lang}</option>
+        ))}
+      </select>
+          {/* <input 
             type="text" 
             placeholder="Language (e.g., English, Spanish)" 
             value={lessoninfo.language}
             onChange={(e) => setLessonInfo({...lessoninfo, language: e.target.value})}
-          />
+          /> */}
           
           <button onClick={summit}>Submit</button>
         </div>
