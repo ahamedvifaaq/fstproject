@@ -1,0 +1,64 @@
+.addcourse {
+    display: flex;
+    justify-content: center;   /* center horizontally */
+    align-items: center;       /* center vertically */
+    min-height: 90vh;          /* full screen feel */
+    background-color: #f4f6f9; /* light background */
+}
+
+/* Form container as card */
+.addcourse form {
+    background-color: #ffffff;
+    padding: 30px;
+    width: 420px;
+    border-radius: 12px;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+/* Title */
+.addcourse form h1 {
+    text-align: center;
+    margin-bottom: 10px;
+    font-size: 24px;
+    color: #333;
+}
+
+/* Inputs */
+.addcourse input,
+.addcourse textarea,
+.addcourse select {
+    padding: 12px;
+    border-radius: 8px;
+    border: 1px solid #d1d5db;
+    font-size: 14px;
+    transition: all 0.2s ease;
+}
+
+/* Focus effect */
+.addcourse input:focus,
+.addcourse textarea:focus,
+.addcourse select:focus {
+    border-color: #3b82f6;
+    box-shadow: 0 0 5px rgba(59, 130, 246, 0.3);
+    outline: none;
+}
+
+/* Button */
+.addcourse button {
+    background-color: #3b82f6;
+    color: white;
+    border: none;
+    padding: 12px;
+    border-radius: 8px;
+    font-size: 15px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+}
+
+/* Button hover */
+.addcourse button:hover {
+    background-color: #2563eb;
+}

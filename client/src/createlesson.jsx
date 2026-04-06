@@ -3,9 +3,10 @@ import { useEffect, useState ,useRef} from 'react'
 import React from 'react'
 import './createlesson.css'
 import Sidebar from "./components/sidebar.jsx";
-import { UNSAFE_RSCDefaultRootErrorBoundary, unstable_useRoute } from 'react-router-dom';
+import { UNSAFE_RSCDefaultRootErrorBoundary, unstable_useRoute, useParams } from 'react-router-dom';
 
 export default function createlesson() {
+  const {courseId,moduleId,title,language}=useParams();
 
     const [showSidebar,setShowSidebar]=useState(false);
     const [content,setContent]=useState("");
@@ -70,6 +71,12 @@ const getSupportedMimeType = () => {
         setContent(data.output);
         console.log(data);
         }
+        if (response.status === 401) {
+        localStorage.removeItem("accessToken");
+        localStorage.removeItem("role");
+        localStorage.removeItem("userId");
+      throw new Error("Unauthorized");
+    }
 
 
     
@@ -81,10 +88,10 @@ const getSupportedMimeType = () => {
 
 
     async function saveLesson(audiou){
-        const lessonData = {   "courseId": "69adbf0c0372a72251d090a7",
-    "moduleId": "69adc7beb127b00b4d40a532",
-    "title":"helloworld",
-    "language":"python",
+        const lessonData = {   "courseId": courseId,
+    "moduleId": moduleId,
+    "title": title,
+    "language": language,
     "videoLength":currentTime.current+1,
     "audioUrl":audiou|| "not working"//not coming correct url simply coming null
 };
@@ -100,6 +107,12 @@ const getSupportedMimeType = () => {
         if(response.status === 200){
             alert('Lesson saved successfully!');
         }
+        if (response.status === 401) {
+        localStorage.removeItem("accessToken");
+        localStorage.removeItem("role");
+        localStorage.removeItem("userId");
+      throw new Error("Unauthorized");
+    }
     }
 
     const startRecording = async () => {
@@ -195,6 +208,12 @@ const getSupportedMimeType = () => {
   });
 
   const data = await uploadRes.json();
+  if (uploadRes.status === 401) {
+        localStorage.removeItem("accessToken");
+        localStorage.removeItem("role");
+        localStorage.removeItem("userId");
+      throw new Error("Unauthorized");
+    }
   uploadData.current=data.fileUrl;
   console.log( "url ",uploadData.current);
 };
@@ -203,7 +222,7 @@ const getSupportedMimeType = () => {
 
     <div className="createLesson-container">
 
-       <Sidebar title={"Module : python"} styles={"#a855f7"} />
+       <Sidebar title={`lesson : ${title}`} styles={"#a855f7"} />
 
     <div className='createlesson'>
         <div className='toolbar'>

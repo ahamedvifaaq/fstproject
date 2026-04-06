@@ -8,7 +8,7 @@ const lessonRefSchema = new mongoose.Schema({
 // Module sub-document embedded in Course
 const moduleSchema = new mongoose.Schema({
     title: { type: String, required: true, default: 'General' },
-    lessons: [lessonRefSchema]
+    lessons: { type: [lessonRefSchema], default: [] }
 });
 
 const courseSchema = new mongoose.Schema({

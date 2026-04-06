@@ -1,10 +1,13 @@
 import React, { useState } from "react";
 import "./sidebar.css";
-import { Link } from "react-router-dom";
+import { Link, Navigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+
 
 
 export default function Sidebar({title,styles}) {
       const [showSidebar,setShowSidebar]=useState(false);
+      const navigate = useNavigate();
   
 
   
@@ -35,19 +38,24 @@ export default function Sidebar({title,styles}) {
       <ul>
         <br></br>
 
-        <li><Link to="/Lesson" style={{color:"white",textDecoration:"none"}}>Home</Link></li>
+        <li onClick={() => navigate('/Lesson')}><Link to="/Lesson" style={{color:"white",textDecoration:"none"}}>Home</Link></li>
 
-        <li>
+        <li onClick={() => navigate('/courses')}>
           <Link to="/courses" style={{color:"white",textDecoration:"none"}}>Courses</Link>
         </li>
 
 
-        <li>
+        <li onClick={() => navigate('/profile')}>
             <Link to="/profile" style={{color:"white",textDecoration:"none"}}>Profile</Link>
 
         </li>
 
-        <li><a href="/" onClick={(e) => { e.preventDefault(); localStorage.removeItem("accessToken"); window.location.href = "/"; }} style={{color:"white",textDecoration:"none",cursor:"pointer"}}>Logout</a></li>
+        <li onClick={() => {
+          localStorage.removeItem("accessToken");
+          window.location.href = "/";
+        }}>
+          <a href="/" style={{color:"white",textDecoration:"none",cursor:"pointer"}}>Logout</a>
+        </li>
 
       </ul>
 

@@ -9,6 +9,9 @@ import Modules from './pages/Modules';
 import ProtectedRoute from "./components/protectedroutes";
 import PublicRoute from "./components/PublicRoute";
 import GoogleCallback from "./components/GoogleCallback";
+import Addcourse from './pages/Addcourse';
+import Editmodule from './pages/editmodule';
+import Createlesson from './createlesson';
 
 function App() {
 
@@ -19,6 +22,8 @@ function App() {
         <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
         <Route path="/register" element={<PublicRoute><Register /></PublicRoute>} />
         <Route path="/google-callback" element={<GoogleCallback />} />
+        <Route path="/addcourse/:id" element={<Addcourse />} />
+        <Route path="/createlesson/:courseId/:moduleId/:title/:language" element={<Createlesson />} />
 
         {/* Protected routes - redirect to / (login) if not logged in */}
         <Route path="/courses" element={<ProtectedRoute><Courses /></ProtectedRoute>} />
