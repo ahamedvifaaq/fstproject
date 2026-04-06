@@ -61,3 +61,20 @@
   background: rgba(59, 130, 246, 0.1);
   border-radius: 5px;
 }
+.addmodule {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 20px;
+  position:fixed;
+  top:40px;
+  right:20px;
+}
+.btn {
+  background: #3b82f6;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 5px;
+  width: 200px;
+  cursor: pointer;
+}

@@ -1,8 +1,10 @@
 import Course from "../models/Course.js";
 import Lesson from "../models/Lesson.js";
+import multer from "multer"
 
 export const createCourse = async (req, res) => {
     const { title, description, difficulty, price, tags, instructorId } = req.body;
+    console.log("Received create course request with data:", { title, description, difficulty, price, tags, instructorId });
     try {
         if (!title || !instructorId) {
             return res.status(400).json({ message: "Title and instructorId are required" });
@@ -22,6 +24,7 @@ export const createCourse = async (req, res) => {
     }
 };
 export const addModule = async (req, res) => {
+    console.log("Received add module request with data:", req.body);
     const { courseId, title } = req.body;
     try {
         if (!courseId) {
@@ -44,7 +47,7 @@ export const addModule = async (req, res) => {
 };
 export const createLesson = async (req, res) => {
     
-    const { courseId, moduleId, title, language, videoLength, timeline } = req.body;
+    const { courseId, moduleId, title, language, videoLength, timeline, audioUrl } = req.body;
     try {
         if (!courseId || !moduleId || !title) {
             return res.status(400).json({ message: "Course ID, Module ID, and title are required" });
@@ -56,12 +59,18 @@ export const createLesson = async (req, res) => {
         const module = course.modules.id(moduleId);
         if (!module) {
             return res.status(404).json({ message: "Module not found" });
+        
         }
+
+        
+
         const newLesson = await Lesson.create({
             title,
             language,
             videoLength,
-            timeline
+            timeline,
+            audioUrl
+
         });
         module.lessons.push({ lessonId: newLesson._id, title: newLesson.title });
         await course.save();
@@ -111,7 +120,7 @@ export const getAllCourses = async (req, res) => {
     console.log("Received request to get all courses");
     try {
         const courses = await Course.find();
-        res.status(200).json(courses);
+        res.status(200).json({courses,role: req.user.role});
     } catch (err) {
         console.error("Get all courses error:", err);
         res.status(500).json({ message: "Server error", error: err.message });
@@ -130,4 +139,23 @@ export const getCourseModules = async (req, res) => {
         console.error("Get course modules error:", err);
         res.status(500).json({ message: "Server error", error: err.message });
     }
+
+
+};
+export const uploadAudio = (req, res) => {
+  try {
+    console.log("REQ.FILE:", req.file);
+
+    if (!req.file) {
+      return res.status(400).json({ error: "No file uploaded" });
+    }
+
+    res.json({
+      fileUrl: `http://localhost:5000/uploads/${req.file.filename}`
+    });
+
+  } catch (err) {
+    console.error("UPLOAD ERROR:", err); // 👈 THIS IS CRITICAL
+    res.status(500).json({ error: err.message });
+  }
 };

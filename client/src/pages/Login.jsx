@@ -23,8 +23,11 @@ export default function Login() {
       });
 
       localStorage.setItem("accessToken", res.data.accessToken);
+      localStorage.setItem("role", res.data.role);
+      localStorage.setItem("userId", res.data.id);
+      
 
-      navigate("/Courses");
+      navigate("/courses");
 
     } catch (err) {
 
@@ -47,10 +50,10 @@ export default function Login() {
         <form onSubmit={handleLogin} className="auth-form">
 
           <div className="form-group">
-            <label>Email</label>
+            <label className="form-label">Email</label>
 
             <input
-              type="email"
+              type="email" className="form-input"
               placeholder="Enter your email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
@@ -61,13 +64,13 @@ export default function Login() {
 
           <div className="form-group">
 
-            <label>Password</label>
+            <label className="form-label">Password</label>
 
             <div className="password-input-group">
 
               <input
                 type={showPassword ? "text" : "password"}
-                placeholder="Enter your password"
+                className="form-input" placeholder="Enter your password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required

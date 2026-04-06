@@ -47,7 +47,7 @@ export default function Sidebar({title,styles}) {
 
         </li>
 
-        <li><Link to="/" style={{color:"white",textDecoration:"none"}}>Logout</Link></li>
+        <li><a href="/" onClick={(e) => { e.preventDefault(); localStorage.removeItem("accessToken"); window.location.href = "/"; }} style={{color:"white",textDecoration:"none",cursor:"pointer"}}>Logout</a></li>
 
       </ul>
 

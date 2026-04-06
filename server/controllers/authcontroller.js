@@ -4,7 +4,7 @@ import bcrypt from "bcryptjs";
 import { generateTokens } from "../utils/tokenService.js";
 
 export const register = async (req, res) => {
-  const { username, email, password, role ,bio,avatarUrl} = req.body;
+  const { username, email, password, role ,bio,avatarUrl } = req.body;
   console.log("Register request received:", { username, email, role });
 
   try {
@@ -56,14 +56,18 @@ export const login = async (req, res) => {
     if (!user) {
       return res.status(400).json({ message: "Invalid credentials" });
     }
-
+    if (!user.password) {
+       return res.status(400).json({
+       message: "This account uses Google login. Please sign in with Google."
+   });
+}
     const isMatch = await bcrypt.compare(password, user.password);
 
     if (!isMatch) {
       return res.status(401).json({ message: "Invalid credentials" });
     }
 
-    const { accessToken, refreshToken } = generateTokens(user._id);
+    const { accessToken, refreshToken } = generateTokens(user._id, user.role);
 
     user.refreshToken = refreshToken;
     await user.save();
@@ -77,6 +81,7 @@ export const login = async (req, res) => {
         id: user._id,
         username: user.username,
         email: user.email,
+        role:user.role,
         accessToken
       });
 
@@ -96,9 +101,9 @@ export const refreshToken = async (req, res) => {
 
     if (err) return res.sendStatus(403);
 
-    const { accessToken } = generateTokens(decoded.userId);
+    const { accessToken } = generateTokens(decoded.userId, decoded.role);
 
-    res.json({ accessToken });
+    res.json({ accessToken, role: decoded.role });
 
   });
 };
@@ -121,7 +126,7 @@ export const googleCallback = async (req, res) => {
 
     const user = req.user;
 
-    const { accessToken, refreshToken } = generateTokens(user._id);
+    const { accessToken, refreshToken } = generateTokens(user._id, user.role);
 
     user.refreshToken = refreshToken;
 
@@ -132,7 +137,7 @@ export const googleCallback = async (req, res) => {
         httpOnly: true,
         sameSite: "strict"
       })
-      .redirect("http://localhost:5173/Courses");
+      .redirect(`http://localhost:5173/courses?token=${accessToken}&role=${user.role}`);
 
   } catch (err) {
 

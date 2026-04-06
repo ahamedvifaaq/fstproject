@@ -9,6 +9,15 @@ import passport from "./config/passport.js";
 import authRoutes from "./routes/authroutes.js";
 import courseRoutes from "./routes/courseroutes.js";
 import profileroutes from"./routes/profileRoutes.js"
+import path from "path";
+import { fileURLToPath } from "url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+
+
+
 const app = express();
 
 /* ---------- Connect Database ---------- */
@@ -27,12 +36,19 @@ app.use(cookieParser());
 
 // passport for Google auth
 app.use(passport.initialize());
+// app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+// In your static middleware or a custom middleware
+app.use("/uploads", (req, res, next) => {
+  res.setHeader("Cross-Origin-Resource-Policy", "cross-origin");
+  next();
+}, express.static(path.join(__dirname, "../uploads")));
 
 /* ---------- Routes ---------- */
 
 app.use("/api/auth", authRoutes);
 app.use("/api", courseRoutes);
 app.use("/api/user",profileroutes);
+
 
 /* ---------- Test Route ---------- */
 

@@ -5,13 +5,26 @@ import { useNavigate} from "react-router-dom";
 export default function Courses() { 
     const [showSidebar,setShowSidebar]=useState(false);
     const [courses, setCourses] = useState([]);
+    
     const navigate = useNavigate();
     useEffect(() => {
-            fetch(`http://localhost:5000/api/courses`,{method:"GET",headers:{"Authorization":`Bearer ${localStorage.getItem("accessToken")}`}})
-
-            .then(response => response.json())
-            .then(data =>{ console.log(data); setCourses(data)})
-            .catch(error => console.error("Error fetching courses:", error));
+        const token = localStorage.getItem("accessToken");
+        fetch(`http://localhost:5000/api/courses`, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        })
+        .then(res => {
+    if (res.status === 401) {
+        localStorage.removeItem("accessToken");
+        localStorage.removeItem("role");
+        localStorage.removeItem("userId");
+      throw new Error("Unauthorized");
+    }
+    return res.json();
+  })
+        .then(data =>{ console.log(data.courses); setCourses(data.courses);localStorage.setItem("role",data.role)})
+        .catch(error => console.error("Error fetching courses:", error));
     }, []);
     const startCourse = (courseId) => {
         
@@ -26,6 +39,10 @@ export default function Courses() {
         
         <div className="courses-page">
              <Sidebar title={"All Coureses"} styles={"red"} />
+             {localStorage.getItem("role")==="instructor" && (
+                 <div className="createcourse"><button className="btn-primary" type="button" onClick={() => navigate(`/addcourse/${localStorage.getItem("userId")}`)}>Add Course </button></div>
+                 
+             )}
             <h1 style={{marginLeft:10}}></h1>
             <div className="courses-grid">
                 {courses.map(course => (
