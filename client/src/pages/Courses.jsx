@@ -14,7 +14,15 @@ export default function Courses() {
                 Authorization: `Bearer ${token}`
             }
         })
-        .then(response => response.json())
+        .then(res => {
+    if (res.status === 401) {
+        localStorage.removeItem("accessToken");
+        localStorage.removeItem("role");
+        localStorage.removeItem("userId");
+      throw new Error("Unauthorized");
+    }
+    return res.json();
+  })
         .then(data =>{ console.log(data.courses); setCourses(data.courses);localStorage.setItem("role",data.role)})
         .catch(error => console.error("Error fetching courses:", error));
     }, []);
@@ -30,7 +38,11 @@ export default function Courses() {
     return (
         
         <div className="courses-page">
-             <Sidebar title={"All Coureses"} styles={"red"} /><div>ksdjfkj</div>
+             <Sidebar title={"All Coureses"} styles={"red"} />
+             {localStorage.getItem("role")==="instructor" && (
+                 <div className="createcourse"><button className="btn-primary" type="button" onClick={() => navigate(`/addcourse/${localStorage.getItem("userId")}`)}>Add Course </button></div>
+                 
+             )}
             <h1 style={{marginLeft:10}}></h1>
             <div className="courses-grid">
                 {courses.map(course => (

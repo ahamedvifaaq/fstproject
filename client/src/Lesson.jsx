@@ -6,6 +6,7 @@ import './lesson.css';
 import Sidebar from "./components/sidebar.jsx";
 import { useParams } from "react-router-dom";
 import { FaPlay, FaPause } from "react-icons/fa";
+ import { useNavigate } from "react-router-dom";
 export default function Lesson() {
   const lessonID=useParams().lessonID;
   const mtitle=useParams().mtitle;
@@ -20,6 +21,9 @@ export default function Lesson() {
   let play =useRef(true);
   const currentcode=useRef("");
   const sliderRef = useRef(null);
+ 
+
+const navigate = useNavigate();
 
   const audioRef = useRef(null);
 
@@ -71,6 +75,12 @@ export default function Lesson() {
       }
     });
      lessonData = await response.json();
+     if (response.status === 401) {
+        localStorage.removeItem("accessToken");
+        localStorage.removeItem("role");
+        localStorage.removeItem("userId");
+      throw new Error("Unauthorized");
+    }
     setLessonData(lessonData);
     console.log("Fetched lesson data:", lessonData);
   }
@@ -155,6 +165,10 @@ export default function Lesson() {
       if (currentTime === lessonData.videoLength) {
         //clearInterval(interval.current);
         play.current=false;
+        setStarted(false);
+        navigate(0);
+      
+        
         
       }}
 
@@ -180,6 +194,12 @@ export default function Lesson() {
         setContent(data.output);
         console.log(data);
         }
+        if (response.status === 401) {
+        localStorage.removeItem("accessToken");
+        localStorage.removeItem("role");
+        localStorage.removeItem("userId");
+      throw new Error("Unauthorized");
+    }
 
 
     
@@ -202,7 +222,7 @@ export default function Lesson() {
       <div className='editor-container'>
       <div className='editor'>
       <Editor
-      defaultValue="hello"
+      defaultValue="welcome to coding"
         value={code}
         theme="vs-dark"
         height="600px"

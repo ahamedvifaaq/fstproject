@@ -14,10 +14,11 @@ export const protect = async (req, res, next) => {
          return next();
       } catch (err) {
          console.error("Token verification failed:", err.message);
-         window.location.href = "/login";
+         
+       
          return res.status(401).json({ message: "Not authorized ,token failed1" })
       }
    }
-   window.location.href = "/login";
+  
    return res.status(401).json({ message: "Not authorized ,token failed2" })
 }

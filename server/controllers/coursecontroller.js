@@ -4,6 +4,7 @@ import multer from "multer"
 
 export const createCourse = async (req, res) => {
     const { title, description, difficulty, price, tags, instructorId } = req.body;
+    console.log("Received create course request with data:", { title, description, difficulty, price, tags, instructorId });
     try {
         if (!title || !instructorId) {
             return res.status(400).json({ message: "Title and instructorId are required" });
@@ -23,6 +24,7 @@ export const createCourse = async (req, res) => {
     }
 };
 export const addModule = async (req, res) => {
+    console.log("Received add module request with data:", req.body);
     const { courseId, title } = req.body;
     try {
         if (!courseId) {

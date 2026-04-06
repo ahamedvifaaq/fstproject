@@ -39,3 +39,17 @@
     flex-direction: column;
     justify-content: space-between;
 }
+.createcourse{
+    display: flex;
+    justify-content: flex-end;
+    padding: 10px;
+    
+}
+.btn-primary{
+    background-color: #3b82f6;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+}
