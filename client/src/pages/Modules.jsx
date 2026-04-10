@@ -10,7 +10,7 @@ export default function Modules() {
     const navigate=useNavigate();
     const [overlay,setOverlay]=useState(false);
     const [moverlay,setMoverlay]=useState(false);
-    const[lessoninfo,setLessonInfo]=useState({title:"",videoLength:"",language:"",timeline:[],moduleId:"",courseId:courseId,audioUrl:""});
+    const[lessoninfo,setLessonInfo]=useState({title:"",videoLength:"",language:"javascript",timeline:[],moduleId:"",courseId:courseId,audioUrl:""});
     const [activateLesson,setActiveLesson]=useState(null);
     const[moduleinfo,setmoduleInfo]=useState({title:"",courseId:courseId});
     // const LANGUAGES = ["javascript", "python", "cpp", "java"];
@@ -69,6 +69,10 @@ export default function Modules() {
           console.log("Adding lesson to module ID:", moduleId);
         }
         const summit=()=>{
+          if(!lessoninfo.title) {
+            alert("Please enter a lesson title");
+            return;
+          }
           console.log("Submitting new lesson");
           navigate(`/createlesson/${courseId}/${lessoninfo.moduleId}/${lessoninfo.title}/${lessoninfo.language}`);
           setOverlay(false);
@@ -153,7 +157,7 @@ export default function Modules() {
              
               <span style={{marginLeft: "20px",color:"gray"}}>{module.lessons.length==0?"No":module.lessons.length} Lessons</span>
              {localStorage.getItem("role") === "instructor" && (
-                <button style={{marginLeft: "20px",padding: "4px 10px",backgroundColor:" #3b82f6",border: "none",borderRadius:"4px",color:"white"}} onClick={() =>{setOverlay(true); setLessonInfo({...lessoninfo, moduleId: module._id});}}>add lesson</button>
+                <button style={{marginLeft: "20px",padding: "4px 10px",backgroundColor:" #3b82f6",border: "none",borderRadius:"4px",color:"white"}} onClick={() =>{setOverlay(true); setLessonInfo({...lessoninfo, moduleId: module._id, title: "", language: "javascript"});}}>add lesson</button>
              )}
           </div>
 
