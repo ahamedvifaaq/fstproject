@@ -59,13 +59,30 @@ export default function Lesson() {
         if (currentStep) {
           setCode(currentStep.codeSnapshot);
           currentcode.current = currentStep.codeSnapshot;
+          
+          if (currentStep.outputSnapshot !== undefined && currentStep.outputSnapshot !== null) {
+              setContent(currentStep.outputSnapshot);
+          }
         }
 
         // ✅ check end using audio duration — not videoLength
         if (audioRef.current.ended || t >= lessonDataRef.current.videoLength) {
           startedRef.current = false;
           setStarted(false);
-          navigate(0);
+          const token = localStorage.getItem("accessToken");
+          if (token) {
+              fetch(`http://localhost:5000/api/user/lesson/${lessonID}/complete`, {
+                  method: 'POST',
+                  headers: { 'Authorization': `Bearer ${token}` }
+              }).then(() => {
+                  navigate(0);
+              }).catch(err => {
+                  console.error("Could not mark lesson complete", err);
+                  navigate(0);
+              });
+          } else {
+              navigate(0);
+          }
           return;
         }
       }
@@ -137,6 +154,11 @@ export default function Lesson() {
     initAudio(data.audioUrl);    // ✅ init audio once data is loaded
     console.log("Fetched lesson data:", data);
   }
+
+  useEffect(() => {
+    document.body.style.background = "#1e1e1e";
+    return () => { document.body.style.background = ""; };
+  }, []);
 
   useEffect(() => {
     loadLesson();
@@ -223,12 +245,12 @@ export default function Lesson() {
       localStorage.removeItem("accessToken");
       localStorage.removeItem("role");
       localStorage.removeItem("userId");
-      throw new Error("Unauthorized");
+      throw new Error("Unauthorized");s
     }
   }
 
   return (
-    <>
+    <div>
       {!overlay && (
         <div className="overlay">
           <div className="play-btn" onClick={() => { setStarted(true); setoverlay(true); }}></div>
@@ -311,6 +333,6 @@ export default function Lesson() {
           </div>
         </div>
       </div>
-    </>
+    </div>
   );
 }

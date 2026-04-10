@@ -1,21 +1,32 @@
 .addcourse {
     display: flex;
-    justify-content: center;   /* center horizontally */
-    align-items: center;       /* center vertically */
-    min-height: 90vh;          /* full screen feel */
-    background-color: #f4f6f9; /* light background */
+    justify-content: center;
+    align-items: center;
+    min-height: 90vh;
 }
 
 /* Form container as card */
 .addcourse form {
-    background-color: #ffffff;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(20px);
+    box-shadow: 0 30px 60px rgba(0, 0, 0, 0.4);
     padding: 30px;
     width: 420px;
-    border-radius: 12px;
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+    border-radius: 20px;
     display: flex;
     flex-direction: column;
     gap: 15px;
+    position: relative;
+    overflow: hidden;
+}
+
+.addcourse form::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: linear-gradient(to right, #4ade80, #3b82f6, #a855f7);
 }
 
 /* Title */
@@ -23,7 +34,8 @@
     text-align: center;
     margin-bottom: 10px;
     font-size: 24px;
-    color: #333;
+    color: #fff;
+    font-weight: 800;
 }
 
 /* Inputs */
@@ -31,10 +43,17 @@
 .addcourse textarea,
 .addcourse select {
     padding: 12px;
-    border-radius: 8px;
-    border: 1px solid #d1d5db;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    background: rgba(15, 23, 42, 0.5);
+    color: #fff;
     font-size: 14px;
     transition: all 0.2s ease;
+}
+
+.addcourse input::placeholder,
+.addcourse textarea::placeholder {
+    color: #64748b;
 }
 
 /* Focus effect */
@@ -42,23 +61,32 @@
 .addcourse textarea:focus,
 .addcourse select:focus {
     border-color: #3b82f6;
-    box-shadow: 0 0 5px rgba(59, 130, 246, 0.3);
+    background: rgba(15, 23, 42, 0.8);
+    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.15);
     outline: none;
+}
+
+.addcourse select option {
+    background-color: #0f172a;
+    color: #fff;
 }
 
 /* Button */
 .addcourse button {
-    background-color: #3b82f6;
+    background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
     color: white;
     border: none;
     padding: 12px;
-    border-radius: 8px;
+    border-radius: 12px;
     font-size: 15px;
+    font-weight: 600;
     cursor: pointer;
-    transition: background 0.3s ease;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
 }
 
 /* Button hover */
 .addcourse button:hover {
-    background-color: #2563eb;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(139, 92, 246, 0.4);
 }

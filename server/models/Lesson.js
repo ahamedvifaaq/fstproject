@@ -4,6 +4,7 @@ import mongoose from 'mongoose';
 const timelineEventSchema = new mongoose.Schema({
     timestamp: { type: Number, required: true },      // seconds from start
     codeSnapshot: { type: String },      // full editor content at this point
+    outputSnapshot: { type: String, default: '' },    // instructor output stream
     explanationText: { type: String, default: '' },         // instructor note / subtitle
     highlightLines: [{ type: Number }],                    // lines to visually highlight
     editable: { type: Boolean, default: false },     // can student edit at this point?

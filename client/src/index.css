@@ -1,2 +1,15 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
 
+body, html {
+  margin: 0;
+  padding: 0;
+  background: radial-gradient(circle at 15% 50%, #1e1b4b, #0f172a 80%);
+  background-attachment: fixed;
+  color: #f8fafc;
+  font-family: 'Inter', sans-serif;
+  min-height: 100vh;
+}
 
+* {
+  box-sizing: border-box;
+}

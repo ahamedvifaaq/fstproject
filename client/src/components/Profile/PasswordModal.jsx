@@ -36,20 +36,22 @@ export default function PasswordModal({ close }) {
 
   return (
     <div className="modal-overlay" onClick={(e) => e.target === e.currentTarget && close()}>
-      <div className="modal-box">
-        <p className="modal-title">Change Password</p>
+      <div className="modal-content">
+        <h2>Change Password</h2>
 
-        <div className="field-group">
-          <label className="field-label">Current Password</label>
-          <input className="field-input" type="password" onChange={set("oldPassword")} />
+        <div className="form-group">
+          <label>Current Password</label>
+          <input type="password" value={form.oldPassword} onChange={set("oldPassword")} />
         </div>
-        <div className="field-group">
-          <label className="field-label">New Password</label>
-          <input className="field-input" type="password" onChange={set("newPassword")} />
+
+        <div className="form-group">
+          <label>New Password</label>
+          <input type="password" value={form.newPassword} onChange={set("newPassword")} />
         </div>
-        <div className="field-group">
-          <label className="field-label">Confirm New Password</label>
-          <input className="field-input" type="password" onChange={set("confirm")} />
+
+        <div className="form-group">
+          <label>Confirm Password</label>
+          <input type="password" value={form.confirm} onChange={set("confirm")} />
         </div>
 
         {feedback.msg && (
@@ -58,10 +60,10 @@ export default function PasswordModal({ close }) {
           </p>
         )}
 
-        <div className="modal-actions">
-          <button className="modal-btn-cancel" onClick={close}>Cancel</button>
-          <button className="modal-btn-save" onClick={save} disabled={loading}>
-            {loading ? "Updating…" : "Update"}
+        <div className="btn-row" style={{marginTop:"30px", justifyContent:"flex-end"}}>
+          <button className="btn btn-outline" onClick={close}>Cancel</button>
+          <button className="btn btn-blue" onClick={save} disabled={loading}>
+            {loading ? "Updating…" : "Update Password"}
           </button>
         </div>
       </div>

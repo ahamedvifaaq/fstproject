@@ -4,6 +4,7 @@ body {
   font-family: Arial;
 }
 
+
 /* Overlay */
 .overlay {
   position: fixed;
@@ -11,12 +12,12 @@ body {
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(0,0,0,0.8);
+  background: rgba(0, 0, 0, 0.8);
   display: flex;
   justify-content: center;
   align-items: center;
   z-index: 1000;
-   opacity: 1;
+  opacity: 1;
   visibility: visible;
   transition: opacity 0.4s ease, visibility 0.4s ease;
 }
@@ -41,6 +42,7 @@ body {
   border-top: 15px solid transparent;
   border-bottom: 15px solid transparent;
 }
+
 .timeline {
   position: fixed;
   bottom: 0px;
@@ -54,14 +56,16 @@ body {
   background: #ccc;
   background-color: black;
 }
+
 .timer {
   width: 100%;
   padding: 5px 50px;
   display: flex;
   justify-content: space-around;
   align-items: center;
-  
+
 }
+
 input[type="range"] {
   width: 100%;
   background: whitesmoke;

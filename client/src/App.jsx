@@ -13,12 +13,14 @@ import Addcourse from './pages/Addcourse';
 import Editmodule from './pages/editmodule';
 import Createlesson from './createlesson';
 
+import Home from './pages/Home';
+
 function App() {
 
   return (
     <>
       <Routes>
-        <Route path="/" element={<PublicRoute><Login /></PublicRoute>} />
+        <Route path="/" element={<Home />} />
         <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
         <Route path="/register" element={<PublicRoute><Register /></PublicRoute>} />
         <Route path="/google-callback" element={<GoogleCallback />} />

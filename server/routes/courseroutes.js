@@ -1,5 +1,5 @@
 import express from "express";
-import { createCourse , addModule ,createLesson, getLesson,runCode,getAllCourses,getCourseModules,uploadAudio } from "../controllers/coursecontroller.js";
+import { createCourse , addModule ,createLesson, getLesson,runCode,getAllCourses,getCourseModules,uploadAudio, deleteModule, deleteLesson } from "../controllers/coursecontroller.js";
 import { protect } from "../middleware/auth.js";
 import { authorize } from "../middleware/roleMiddleware.js";
 
@@ -13,6 +13,8 @@ router.post("/upload", upload.single("audio"), uploadAudio);
 router.post("/createcourse", protect, authorize("instructor", "admin"), createCourse);
 router.post("/addmodule", protect, authorize("instructor", "admin"), addModule);
 router.post("/createlesson", protect, authorize("instructor", "admin"), createLesson);
+router.delete("/deletemodule/:courseId/:moduleId", protect, authorize("instructor", "admin"), deleteModule);
+router.delete("/deletelesson/:courseId/:moduleId/:lessonId", protect, authorize("instructor", "admin"), deleteLesson);
 
 // All authenticated users — reading content
 router.get("/courses", protect, getAllCourses);

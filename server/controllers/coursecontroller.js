@@ -154,7 +154,15 @@ export const runCode = async (req, res) => {
     );
 
     const data = await responce.json();
-    return res.status(200).json({ output: data.stdout });
+    
+    let finalOutput = "";
+    if (data.stdout !== null && data.stdout !== undefined) finalOutput += data.stdout;
+    if (data.stderr !== null && data.stderr !== undefined) finalOutput += data.stderr;
+    if (data.compile_output !== null && data.compile_output !== undefined) finalOutput += data.compile_output;
+    if (data.message !== null && data.message !== undefined) finalOutput += data.message;
+    if (!finalOutput) finalOutput = "Execution returned no output.";
+
+    return res.status(200).json({ output: finalOutput });
 };
 
 export const getAllCourses = async (req, res) => {
@@ -199,4 +207,41 @@ export const uploadAudio = (req, res) => {
     console.error("UPLOAD ERROR:", err); // 👈 THIS IS CRITICAL
     res.status(500).json({ error: err.message });
   }
+};
+
+export const deleteModule = async (req, res) => {
+    try {
+        const { courseId, moduleId } = req.params;
+        const course = await Course.findById(courseId);
+        if (!course) return res.status(404).json({ message: "Course not found" });
+
+        course.modules = course.modules.filter(m => String(m._id) !== String(moduleId));
+        await course.save();
+
+        res.status(200).json({ message: "Module deleted successfully" });
+    } catch (err) {
+        console.error("Delete module error:", err);
+        res.status(500).json({ message: "Server error", error: err.message });
+    }
+};
+
+export const deleteLesson = async (req, res) => {
+    try {
+        const { courseId, moduleId, lessonId } = req.params;
+        const course = await Course.findById(courseId);
+        if (!course) return res.status(404).json({ message: "Course not found" });
+
+        const module = course.modules.id(moduleId);
+        if (!module) return res.status(404).json({ message: "Module not found" });
+
+        module.lessons = module.lessons.filter(l => String(l.lessonId._id || l.lessonId) !== String(lessonId));
+        await course.save();
+
+        await Lesson.findByIdAndDelete(lessonId);
+
+        res.status(200).json({ message: "Lesson deleted successfully" });
+    } catch (err) {
+        console.error("Delete lesson error:", err);
+        res.status(500).json({ message: "Server error", error: err.message });
+    }
 };

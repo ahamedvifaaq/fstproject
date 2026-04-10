@@ -20,14 +20,25 @@ export default function Profile() {
         headers: { Authorization: `Bearer ${token}` },
       })
       .then((res) => setUser(res.data))
-      .catch((err) =>
-        setError(err.response?.data?.message || "Failed to load profile.")
-      );
+      .catch((err) => {
+        if (err.response?.status === 401) {
+            localStorage.removeItem("accessToken");
+            localStorage.removeItem("role");
+            localStorage.removeItem("userId");
+            window.location.href = "/login";
+            return;
+        }
+        setError(err.response?.data?.message || "Failed to load profile.");
+      });
   }, []);
 
   if (!user && !error) return <p className="loading-msg">Loading…</p>;
   if (error)           return <><Sidebar title="Profile" styles="grey" /><p className="error-msg">{error}</p></>;
 
+  const role     = user.role || "student";
+  const initials = (user.username || "?").slice(0, 2).toUpperCase();
+
+  // Student stats
   const enrolled         = user.enrolledCourses || [];
   const totalCourses     = enrolled.length;
   const avgProgress      = totalCourses === 0 ? 0
@@ -35,8 +46,12 @@ export default function Profile() {
   const lessonsCompleted = enrolled.reduce(
     (s, c) => s + (c.completedLessons ? c.completedLessons.length : 0), 0
   );
-  const initials = (user.username || "?").slice(0, 2).toUpperCase();
-  const role     = user.role || "student";
+
+  // Instructor stats
+  const createdCourses   = user.createdCourses || [];
+  const totalCreated     = createdCourses.length;
+  const totalLessonsCr   = user.totalLessonsCreated || 0;
+  const totalStudentsEn  = user.totalStudentsEnrolled || 0;
 
   return (
     <>
@@ -69,18 +84,38 @@ export default function Profile() {
               {user.createdAt ? new Date(user.createdAt).toLocaleDateString() : "—"}
             </span>
           </div>
-         
-          <div className="info-row">
-            <span className="info-label">Courses</span>
-            <span className="info-value">{totalCourses}</span>
-          </div>
-          <div className="info-row">
-            <span className="info-label">Lessons done</span>
-            <span className="info-value">{lessonsCompleted}</span>
-          </div>
-          <div className="info-row">
-            <span className="info-label">Avg. progress</span>
-            <span className="info-value">{avgProgress}%</span>
+          <div className="metrics-grid">
+          {role === "instructor" ? (
+            <>
+              <div className="metric-card">
+                <span className="metric-value">{totalCreated}</span>
+                <span className="metric-label">Courses</span>
+              </div>
+              <div className="metric-card">
+                <span className="metric-value">{totalLessonsCr}</span>
+                <span className="metric-label">Lessons</span>
+              </div>
+              <div className="metric-card">
+                <span className="metric-value">{totalStudentsEn}</span>
+                <span className="metric-label">Students</span>
+              </div>
+            </>
+          ) : (
+            <>
+              <div className="metric-card">
+                <span className="metric-value">{totalCourses}</span>
+                <span className="metric-label">Courses</span>
+              </div>
+              <div className="metric-card">
+                <span className="metric-value">{lessonsCompleted}</span>
+                <span className="metric-label">Done</span>
+              </div>
+              <div className="metric-card">
+                <span className="metric-value">{avgProgress}%</span>
+                <span className="metric-label">Progress</span>
+              </div>
+            </>
+          )}
           </div>
 
           <div className="btn-row">
@@ -88,15 +123,44 @@ export default function Profile() {
               Edit Profile
             </button>
             {!user.googleId && (
-              <button className="btn btn-outline" onClick={() => setShowPassword(true)}>
+              <button 
+                className="btn btn-outline" 
+                style={{ color: "#fff" }} 
+                onMouseEnter={(e) => { e.target.style.background = "rgba(255,255,255,0.1)"; e.target.style.color = "#fff"; }}
+                onMouseLeave={(e) => { e.target.style.background = "rgba(255,255,255,0.05)"; e.target.style.color = "#fff"; }}
+                onClick={() => setShowPassword(true)}
+              >
                 Change Password
               </button>
             )}
           </div>
         </div>
 
-        {/* ── Enrolled Courses ── */}
+        {/* ── Courses ── */}
         <div className="profile-card">
+          {role === "instructor" && (
+            <div style={{ marginBottom: 30 }}>
+              <p className="section-heading">Created Courses</p>
+              {createdCourses.length === 0 ? (
+                <p className="empty-msg">No courses created yet.</p>
+              ) : (
+                createdCourses.map((course, i) => (
+                  <div className="course-row" key={'c' + i}>
+                    <p className="course-row-name">{course.title || "Untitled Course"}</p>
+                    <p className="course-row-meta">
+                      Created {course.createdAt ? new Date(course.createdAt).toLocaleDateString() : "—"}
+                      {course.difficulty ? ` · ${course.difficulty}` : ""}
+                      {" · "}{course.modules?.length || 0} modules
+                    </p>
+                    <div className="progress-wrap">
+                      <p className="progress-label" style={{ marginLeft: 0, marginTop: 4 }}>{course.studentsEnrolled || 0} students enrolled</p>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          )}
+
           <p className="section-heading">Enrolled Courses</p>
           {enrolled.length === 0 ? (
             <p className="empty-msg">No courses enrolled yet.</p>
@@ -105,7 +169,7 @@ export default function Profile() {
               const course = ec.courseId;
               const pct    = ec.progress || 0;
               return (
-                <div className="course-row" key={i}>
+                <div className="course-row" key={'e' + i}>
                   <p className="course-row-name">{course?.title || "Untitled Course"}</p>
                   <p className="course-row-meta">
                     Enrolled {ec.enrolledAt ? new Date(ec.enrolledAt).toLocaleDateString() : "—"}

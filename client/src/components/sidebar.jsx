@@ -15,61 +15,45 @@ export default function Sidebar({title,styles}) {
   return (
   <>
     <div className="top-bar">
+        <div 
+            className="hamburger"
+            onClick={()=>setShowSidebar(!showSidebar)}
+            style={{padding:"7px" }}
+        >
+            <div className="hamburger-icon">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
                   
-                    <div 
-                          className="hamburger"
-                          onClick={()=>setShowSidebar(!showSidebar)}
-                          onMouseOver={()=>setShowSidebar(!showSidebar)}
-                          style={{color:"grey",padding:"7px" }}
-                         
-                      >
-                          ☰
-                      </div>
+        {showSidebar && (
+            <div className="sidebar-overlay" onClick={()=>setShowSidebar(false)} >
+                <div className="sidebar" onClick={(e)=> e.stopPropagation()}>
+                    <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
+                        <h3 className="sidebar-title" style={{padding:"0 15px", margin: 0}}>Menu</h3>
+                        <button onClick={()=>setShowSidebar(false)} style={{background:'none', border:'none', color:'#fff', fontSize:'24px', cursor:'pointer'}}>&times;</button>
+                    </div>
+                    <ul>
+                    <li onClick={() => {setShowSidebar(false); navigate('/Lesson');}}><Link to="/Lesson">Home</Link></li>
+                    <li onClick={() => {setShowSidebar(false); navigate('/courses');}}><Link to="/courses">Courses</Link></li>
+                    <li onClick={() => {setShowSidebar(false); navigate('/profile');}}><Link to="/profile">Profile</Link></li>
+                    <li onClick={() => {
+                        setShowSidebar(false);
+                        localStorage.removeItem("accessToken");
+                        window.location.href = "/";
+                    }}>
+                        <a href="/">Logout</a>
+                    </li>
+                    </ul>
+                </div>
+            </div>
+        )}
                   
-                       {showSidebar && (
-                      <div className="sidebar-overlay" onMouseLeave={()=>setShowSidebar(!showSidebar)} >
-                        <div className="sidebar">
-      
-
-
-      <h3 className="sidebar-title"><pre style={{padding:7
-      }}>      Menu</pre></h3>
-
-      <ul>
-        <br></br>
-
-        <li onClick={() => navigate('/Lesson')}><Link to="/Lesson" style={{color:"white",textDecoration:"none"}}>Home</Link></li>
-
-        <li onClick={() => navigate('/courses')}>
-          <Link to="/courses" style={{color:"white",textDecoration:"none"}}>Courses</Link>
-        </li>
-
-
-        <li onClick={() => navigate('/profile')}>
-            <Link to="/profile" style={{color:"white",textDecoration:"none"}}>Profile</Link>
-
-        </li>
-
-        <li onClick={() => {
-          localStorage.removeItem("accessToken");
-          window.location.href = "/";
-        }}>
-          <a href="/" style={{color:"white",textDecoration:"none",cursor:"pointer"}}>Logout</a>
-        </li>
-
-      </ul>
-
+        <h2 className="lesson-title gradient-text-header">
+            {title}
+        </h2>
     </div>
-                      </div>
-                    )}
-                  
-                      <h2 className="lesson-title" style={{marginLeft:10,color:styles}}>
-                          {title}
-                      </h2>
-                  
-                  </div>
-
-    
     </>
   );
 }

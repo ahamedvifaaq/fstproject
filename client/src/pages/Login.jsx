@@ -78,9 +78,10 @@ export default function Login() {
 
               <button
                 type="button"
+                className="password-toggle"
                 onClick={() => setShowPassword(!showPassword)}
               >
-                👁
+                {showPassword ? "👁" : "👁‍🗨"}
               </button>
 
             </div>

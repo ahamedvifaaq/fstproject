@@ -2,49 +2,17 @@
 
     body{
     margin: 0;
-    background-color: #1e1e1e;
 }
 /* Hamburger Menu */
 /* Top bar */
 /* sidebar overlay */
 
-.sidebar-overlay{
-    position:absolute;
-    top:40px;
-    left:0;
-    z-index:2000;
-}
-
-.top-bar{
-    display:flex;
-    align-items:center;
-    gap:15px;
-    margin-bottom:15px;
-}
-
-/* Hamburger */
-
-.hamburger{
-    font-size:28px;
-    cursor:pointer;
-    color:white;
-    position:relative;
-    z-index:5000;   /* must be higher than sidebar */
-}
-
-/* Lesson title */
-
-.lesson-title{
-    color:#a855f7;
-    margin:0;
-}
-
-
 .createLesson-container{
-    background-color: #1e1e1e;
     color: white;
- /* margin-left: 190px;   adjusted for smaller sidebar */
     padding: 20px;
+    padding-top: 80px;
+    margin-top: 0;
+    background-color: #1e1e1e;
     min-height: 100vh;
 }
 
@@ -58,7 +26,9 @@
 
 .createlesson{
     display: flex;
+    flex-wrap: wrap; /* allow toolbar to take full width above if necessary */
     gap: 20px;
+    position: relative; /* lock absolute children here */
 }
 
 
@@ -66,9 +36,7 @@
 
 .editor-container{
     position: relative;
-    width: 75%;   /* increased editor size */
-    /* border-radius: 8px; */
-    /* overflow: hidden; */
+    width: calc(75% - 10px);
 }
 
 
@@ -76,11 +44,10 @@
 /* Toolbar */
 
 .toolbar{
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    margin-top: 20px;
-    margin-right: 400px;
+    width: 100%;
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: -10px;
     z-index: 10;
 }
 
@@ -102,14 +69,15 @@
 /* ================= OUTPUT ================= */
 
 .output{
-    width: 25%;  /* reduced output width */
+    width: calc(25% - 10px);
     height: auto;
     border-radius: 8px;
-    background-color: white;
-    color: black;
+    background-color: #252526;
+    color: white;
     margin-top: 0;
     padding: 15px;
     position: relative;
+    border: 1px solid #333;
 }
 
 
@@ -133,12 +101,4 @@
 
 .output-run button:hover{
     background-color: #16a34a;
-}
-.sidebar{
-    position:relative;
-    width:190px;
-    background-color:#111;
-    color:white;
-    padding:15px;
-    border-radius:10px;
-}
+}

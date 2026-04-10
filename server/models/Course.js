@@ -21,6 +21,7 @@ const courseSchema = new mongoose.Schema({
     instructorId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
     modules: [moduleSchema],
 
+    imageUrl: { type: String, default: '' },
     studentsEnrolled: { type: Number, default: 0, min: 0 },
     allowEnrollment: { type: Boolean, default: true }
 }, {

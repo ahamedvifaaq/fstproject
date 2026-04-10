@@ -34,22 +34,22 @@ export default function EditModal({ user, setUser, close }) {
 
   return (
     <div className="modal-overlay" onClick={(e) => e.target === e.currentTarget && close()}>
-      <div className="modal-box">
-        <p className="modal-title">Edit Profile</p>
+      <div className="modal-content">
+        <h2>Edit Profile</h2>
 
-        <div className="field-group">
-          <label className="field-label">Username</label>
-          <input className="field-input" value={form.username} onChange={set("username")} />
+        <div className="form-group">
+          <label>Username</label>
+          <input value={form.username} onChange={set("username")} />
         </div>
 
-        <div className="field-group">
-          <label className="field-label">Bio</label>
-          <textarea className="field-textarea" value={form.bio} onChange={set("bio")} placeholder="About you…" />
+        <div className="form-group">
+          <label>Bio</label>
+          <textarea style={{background: "rgba(15, 23, 42, 0.5)", border: "1px solid rgba(255,255,255,0.15)", borderRadius: "12px", width: "100%", padding:"12px", color:"#fff", resize:"vertical", minHeight:"80px"}} value={form.bio} onChange={set("bio")} placeholder="About you…" />
         </div>
 
-        <div className="field-group">
-          <label className="field-label">Avatar URL</label>
-          <input className="field-input" value={form.avatarUrl} onChange={set("avatarUrl")} placeholder="https://…" />
+        <div className="form-group">
+          <label>Avatar URL</label>
+          <input value={form.avatarUrl} onChange={set("avatarUrl")} placeholder="https://…" />
         </div>
 
         {feedback.msg && (
@@ -58,9 +58,9 @@ export default function EditModal({ user, setUser, close }) {
           </p>
         )}
 
-        <div className="modal-actions">
-          <button className="modal-btn-cancel" onClick={close}>Cancel</button>
-          <button className="modal-btn-save" onClick={save} disabled={loading}>
+        <div className="btn-row" style={{marginTop:"30px", justifyContent:"flex-end"}}>
+          <button className="btn btn-outline" onClick={close}>Cancel</button>
+          <button className="btn btn-blue" onClick={save} disabled={loading}>
             {loading ? "Saving…" : "Save"}
           </button>
         </div>

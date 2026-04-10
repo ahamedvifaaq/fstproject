@@ -36,37 +36,47 @@ export default function Courses() {
        
     }
     return (
-        
         <div className="courses-page">
              <Sidebar title={"All Courses"} styles={"red"} />
-             {localStorage.getItem("role")==="instructor" && (
-                 <div className="createcourse"><button className="btn-primary" type="button" onClick={() => navigate(`/addcourse/${localStorage.getItem("userId")}`)}>Add Course </button></div>
-                 
-             )}
-            <h1 style={{marginLeft:10}}></h1>
-            <div className="courses-grid">
-                {courses.map(course => (
-                    <div key={course._id} className="course-card">
-                        <div className="content">
-                        <h2>{course.title}</h2>
-                        <p>{course.description}</p>
-                        <p>Difficulty: {course.difficulty}</p>
-                        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-                        <p>price: ${course.price}</p>
-                        <button onClick={()=>startCourse(course._id)} style={{marginLeft: "8px",
-    padding: "6px 14px",
-    backgroundColor:" #3b82f6",
-    border: "none",
-    color: "white",
-    borderRadius: "4px",
-    cursor: "pointer"
-    }}>start</button></div>
-                        </div>
-                        
-                    </div>
-                ))}
-            </div>
+             
+             <div className="courses-container">
+                 <div className="createcourse">
+                     <h1>Explore Courses</h1>
+                     {localStorage.getItem("role")==="instructor" && (
+                         <button className="btn-primary" type="button" onClick={() => navigate(`/addcourse/${localStorage.getItem("userId")}`)}>
+                             + Create New Course
+                         </button>
+                     )}
+                 </div>
+
+                 <div className="courses-grid">
+                     {courses.map(course => (
+                         <div key={course._id} className="course-card">
+                             <div className="course-image-container">
+                                 {/* Use placeholder image if none exists */}
+                                 <img src={course.imageUrl || "/assets/course-placeholder.png"} alt={course.title} />
+                                 <span className={`difficulty-badge ${course.difficulty || 'beginner'}`}>
+                                     {course.difficulty || 'beginner'}
+                                 </span>
+                             </div>
+                             
+                             <div className="content">
+                                 <h2>{course.title}</h2>
+                                 <p className="description">{course.description || "No description provided."}</p>
+                                 
+                                 <div className="card-footer">
+                                     <span className={`price ${course.price === 0 ? 'free' : ''}`}>
+                                         {course.price === 0 ? 'Free' : `$${course.price}`}
+                                     </span>
+                                     <button className="btn-start" onClick={()=>startCourse(course._id)}>
+                                         Start Learning -&gt;
+                                     </button>
+                                 </div>
+                             </div>
+                         </div>
+                     ))}
+                 </div>
+             </div>
         </div>
-        
     );
 }
