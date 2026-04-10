@@ -62,8 +62,14 @@ export default function Modules() {
         .then(data => setModules(Array.isArray(data) ? data : []))
         .catch(error => console.error("Error fetching modules:", error));
 
-        // Fetch User profile to get completed lessons
         if (token && localStorage.getItem("role") !== "instructor") {
+            // Auto-enroll when student visits course
+            fetch(`http://localhost:5000/api/course/${courseId}/enroll`, {
+                method: "POST",
+                headers: { Authorization: `Bearer ${token}` }
+            }).catch(console.error);
+
+            // Fetch User profile to get completed lessons
             fetch(`http://localhost:5000/api/user/profilepage`, {
                 headers: { Authorization: `Bearer ${token}` }
             })

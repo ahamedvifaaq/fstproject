@@ -2,6 +2,9 @@ import "dotenv/config";
 import express from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
+import { createServer } from "http";
+import { Server } from "socket.io";
+import { setupPtySocket } from "./controllers/ptyController.js";
 
 import connectDB from "./config/db.js";
 import passport from "./config/passport.js";
@@ -19,6 +22,16 @@ const __dirname = path.dirname(__filename);
 
 
 const app = express();
+const httpServer = createServer(app);
+
+const io = new Server(httpServer, {
+  cors: {
+    origin: "http://localhost:5173",
+    credentials: true,
+  },
+});
+
+setupPtySocket(io);
 
 /* ---------- Connect Database ---------- */
 connectDB();
@@ -62,6 +75,6 @@ app.get("/", (req, res) => {
 
 const PORT = process.env.PORT || 5000;
 
-app.listen(PORT, () => {
+httpServer.listen(PORT, () => {
   console.log(`Server started on port ${PORT}`);
 });

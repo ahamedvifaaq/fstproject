@@ -1,5 +1,5 @@
 import express from "express";
-import { createCourse , addModule ,createLesson, getLesson,runCode,getAllCourses,getCourseModules,uploadAudio, deleteModule, deleteLesson } from "../controllers/coursecontroller.js";
+import { createCourse , addModule ,createLesson, getLesson,runCode,getAllCourses,getCourseModules,uploadAudio, deleteModule, deleteLesson, enrollCourse } from "../controllers/coursecontroller.js";
 import { protect } from "../middleware/auth.js";
 import { authorize } from "../middleware/roleMiddleware.js";
 
@@ -20,6 +20,7 @@ router.delete("/deletelesson/:courseId/:moduleId/:lessonId", protect, authorize(
 router.get("/courses", protect, getAllCourses);
 router.get("/lesson/:id", protect, getLesson);
 router.get("/course/:courseId/modules", protect, getCourseModules);
+router.post("/course/:courseId/enroll", protect, enrollCourse);
 router.post("/output", protect, runCode);
 
 

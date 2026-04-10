@@ -7,6 +7,10 @@ import Sidebar from "./components/sidebar.jsx";
 import { useParams } from "react-router-dom";
 import { FaPlay, FaPause } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
+import { Terminal } from "xterm";
+import { FitAddon } from "@xterm/addon-fit";
+import "xterm/css/xterm.css";
+import { io } from "socket.io-client";
 
 export default function Lesson() {
   const lessonID = useParams().lessonID;
@@ -14,6 +18,8 @@ export default function Lesson() {
   var [lessonData, setLessonData] = useState(mockLesson);
   const [code, setCode] = useState("");
   const [content, setContent] = useState("");
+  const [stdin, setStdin] = useState("");
+  const [isRunning, setIsRunning] = useState(false);
   var [overlay, setoverlay] = useState(false);
   const [started, setStarted] = useState(false);
   var [currentTime, setcurrentTime] = useState(-1);
@@ -22,11 +28,15 @@ export default function Lesson() {
   const sliderRef = useRef(null);
   const [speed, setSpeed] = useState(1);
   const speedRef = useRef(1);
-  const startedRef = useRef(false);        // ✅ ref for started to avoid stale closures
-  const lessonDataRef = useRef(mockLesson); // ✅ ref for lessonData to avoid stale closures
-  const animFrameRef = useRef(null);        // ✅ rAF ref instead of setInterval
+  const startedRef = useRef(false);
+  const lessonDataRef = useRef(mockLesson);
+  const animFrameRef = useRef(null);
   const navigate = useNavigate();
   const audioRef = useRef(null);
+
+  const socketRef = useRef(null);
+  const terminalRef = useRef(null);
+  const xtermRef = useRef(null);
 
   const getAudioUrl = (url) => {
     if (!url || url === "not working") return null;
@@ -157,7 +167,69 @@ export default function Lesson() {
 
   useEffect(() => {
     document.body.style.background = "#1e1e1e";
-    return () => { document.body.style.background = ""; };
+    
+    // Initialize Xterm with premium aesthetics
+    const term = new Terminal({
+      theme: { 
+        background: "#0f111a",
+        foreground: "#8f9bc0", 
+        cursor: "#a855f7",
+        selectionBackground: "rgba(168, 85, 247, 0.3)",
+        black: "#000000",
+        red: "#ff5370",
+        green: "#c3e88d",
+        yellow: "#ffcb6b",
+        blue: "#82aaff",
+        magenta: "#c792ea",
+        cyan: "#89ddff",
+        white: "#ffffff",
+      },
+      cursorBlink: true,
+      fontFamily: "'Fira Code', 'Cascadia Code', Consolas, monospace",
+      fontSize: 15,
+      letterSpacing: 1.1,
+      lineHeight: 1.4,
+      convertEol: true,
+      padding: 15
+    });
+    const fitAddon = new FitAddon();
+    term.loadAddon(fitAddon);
+    xtermRef.current = term;
+
+    if (terminalRef.current) {
+      term.open(terminalRef.current);
+      
+      const resizeObserver = new ResizeObserver(() => {
+        window.requestAnimationFrame(() => {
+          try { fitAddon.fit(); } catch (e) {}
+        });
+      });
+      resizeObserver.observe(terminalRef.current);
+
+      term.onDispose = term.onDispose || function() {};
+      const origDispose = term.dispose.bind(term);
+      term.dispose = () => {
+        resizeObserver.disconnect();
+        origDispose();
+      };
+    }
+
+    // Initialize Socket
+    socketRef.current = io("http://localhost:5000");
+    
+    socketRef.current.on("output", (data) => {
+      term.write(data);
+    });
+
+    term.onData((data) => {
+      socketRef.current.emit("input", data);
+    });
+
+    return () => {
+      document.body.style.background = "";
+      term.dispose();
+      socketRef.current?.disconnect();
+    };
   }, []);
 
   useEffect(() => {
@@ -228,24 +300,15 @@ export default function Lesson() {
   }, [speed]);
 
   async function runCode() {
-    const token = localStorage.getItem("accessToken");
-    const response = await fetch('http://localhost:5000/api/output', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-      },
-      body: JSON.stringify({ code: currentcode.current,language: lessonData.language })
-    });
-    if (response.status === 200) {
-      const data = await response.json();
-      setContent(data.output);
+    setIsRunning(true);
+    if (xtermRef.current) {
+      xtermRef.current.clear();
+      xtermRef.current.writeln("\x1b[33mStarting Interactive Session...\x1b[0m");
     }
-    if (response.status === 401) {
-      localStorage.removeItem("accessToken");
-      localStorage.removeItem("role");
-      localStorage.removeItem("userId");
-      throw new Error("Unauthorized");s
+    try {
+      socketRef.current?.emit("run_code", { code: currentcode.current, language: lessonData.language || "javascript" });
+    } finally {
+      setIsRunning(false);
     }
   }
 
@@ -272,13 +335,54 @@ export default function Lesson() {
               />
             </div>
           </div>
-          <div className='output'>
-            output screen
-            <div className="output-run">
-              <button onClick={() => runCode()}>Run</button>
+          <div className='output' style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+            
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <h3 style={{ margin: 0, color: "#fff", fontWeight: 600 }}>Code Execution</h3>
+              <button 
+                onClick={() => runCode()} 
+                disabled={isRunning} 
+                style={{ 
+                  padding: "10px 20px", 
+                  backgroundColor: "#a855f7", 
+                  color: "white", 
+                  border: "none", 
+                  borderRadius: "8px", 
+                  cursor: isRunning ? "not-allowed" : "pointer", 
+                  opacity: isRunning ? 0.7 : 1,
+                  fontWeight: "bold",
+                  boxShadow: "0 4px 14px 0 rgba(168, 85, 247, 0.39)",
+                  transition: "all 0.2s ease"
+                }}>
+                {isRunning ? "Running..." : "▶ Run code"}
+              </button>
             </div>
-            <div className="output-content" style={{ whiteSpace: "pre-line" }}>
-              {content}
+            
+            <div className="terminal-window" style={{ 
+                borderRadius: "12px", 
+                boxShadow: "0 10px 30px rgba(0,0,0,0.5)", 
+                backgroundColor: "#0f111a", 
+                overflow: "hidden",
+                border: "1px solid rgba(255,255,255,0.08)",
+                display: "flex", 
+                flexDirection: "column",
+                flexGrow: 1, 
+                minHeight: "450px"
+            }}>
+              {/* Native OS-Like Header */}
+              <div style={{ display: "flex", alignItems: "center", padding: "12px 15px", backgroundColor: "rgba(0,0,0,0.3)", borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
+                <div style={{ display: "flex", gap: "8px" }}>
+                  <div style={{ width: "12px", height: "12px", borderRadius: "50%", backgroundColor: "#ff5f56" }}></div>
+                  <div style={{ width: "12px", height: "12px", borderRadius: "50%", backgroundColor: "#ffbd2e" }}></div>
+                  <div style={{ width: "12px", height: "12px", borderRadius: "50%", backgroundColor: "#27c93f" }}></div>
+                </div>
+                <div style={{ margin: "0 auto", color: "rgba(255,255,255,0.4)", fontSize: "12px", fontFamily: "sans-serif", fontWeight: 500, letterSpacing: "0.5px" }}>
+                   Interactive Shell • {lessonData.language || 'code'}
+                </div>
+                <div style={{ width: "52px" }}></div>
+              </div>
+              
+              <div ref={terminalRef} style={{ width: "100%", height: "100%", flexGrow: 1, padding: "10px", paddingLeft: "15px" }}></div>
             </div>
           </div>
         </div>

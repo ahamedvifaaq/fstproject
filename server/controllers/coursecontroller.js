@@ -1,5 +1,6 @@
 import Course from "../models/Course.js";
 import Lesson from "../models/Lesson.js";
+import User from "../models/User.js";
 import multer from "multer"
 
 export const createCourse = async (req, res) => {
@@ -148,7 +149,7 @@ export const runCode = async (req, res) => {
             body: JSON.stringify({
                 language_id: LANGUAGE_ID_MAP[req.body.language] || 63, // default to JavaScript 
                 source_code: req.body.code,
-                stdin: "Alice"
+                stdin: req.body.stdin || ""
             })
         }
     );
@@ -242,6 +243,37 @@ export const deleteLesson = async (req, res) => {
         res.status(200).json({ message: "Lesson deleted successfully" });
     } catch (err) {
         console.error("Delete lesson error:", err);
+        res.status(500).json({ message: "Server error", error: err.message });
+    }
+};
+
+export const enrollCourse = async (req, res) => {
+    const courseId = req.params.courseId;
+    const userId = req.user._id;
+    try {
+        const user = await User.findById(userId);
+        const course = await Course.findById(courseId);
+        if (!user || !course) return res.status(404).json({ message: "User or Course not found" });
+
+        const alreadyEnrolled = user.enrolledCourses.find(c => String(c.courseId) === String(courseId));
+        if (!alreadyEnrolled) {
+            user.enrolledCourses.push({ courseId });
+            await user.save();
+            
+            course.studentsEnrolled = (course.studentsEnrolled || 0) + 1;
+            await course.save();
+
+            const instructor = await User.findById(course.instructorId);
+            if (instructor) {
+                instructor.totalStudentsEnrolled = (instructor.totalStudentsEnrolled || 0) + 1;
+                await instructor.save();
+            }
+
+            return res.status(200).json({ message: "Enrolled successfully" });
+        }
+        res.status(200).json({ message: "Already enrolled" });
+    } catch (err) {
+        console.error("Enroll error:", err);
         res.status(500).json({ message: "Server error", error: err.message });
     }
 };
