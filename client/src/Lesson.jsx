@@ -25,6 +25,7 @@ export default function Lesson() {
   var [currentTime, setcurrentTime] = useState(-1);
   const currentTimeRef = useRef(-1);
   const currentcode = useRef("");
+  const currentOutputRef = useRef("");
   const sliderRef = useRef(null);
   const [speed, setSpeed] = useState(1);
   const speedRef = useRef(1);
@@ -71,7 +72,13 @@ export default function Lesson() {
           currentcode.current = currentStep.codeSnapshot;
           
           if (currentStep.outputSnapshot !== undefined && currentStep.outputSnapshot !== null) {
-              setContent(currentStep.outputSnapshot);
+              if (currentStep.outputSnapshot !== currentOutputRef.current) {
+                  if (xtermRef.current) {
+                      xtermRef.current.reset();
+                      xtermRef.current.write(currentStep.outputSnapshot);
+                  }
+                  currentOutputRef.current = currentStep.outputSnapshot;
+              }
           }
         }
 
