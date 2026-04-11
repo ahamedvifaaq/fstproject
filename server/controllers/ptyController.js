@@ -21,6 +21,7 @@ export const setupPtySocket = (io) => {
       let cmd = "";
       let args = [];
       let tempFilePath = "";
+      let exeFilePath = "";
 
       try {
         const isWin = os.platform() === "win32";
@@ -40,6 +41,14 @@ export const setupPtySocket = (io) => {
           fs.writeFileSync(tempFilePath, code);
           cmd = isWin ? "cmd.exe" : "java";
           args = isWin ? ["/c", "java", tempFilePath] : [tempFilePath];
+        } else if (language === "cpp" || language === "c++" || language === "c") {
+          tempFilePath = path.join(tmpDir, `script_${sessionId}.${language === "c" ? "c" : "cpp"}`);
+          exeFilePath = path.join(tmpDir, `script_${sessionId}${isWin ? ".exe" : ""}`);
+          fs.writeFileSync(tempFilePath, code);
+          cmd = isWin ? "cmd.exe" : "sh";
+          args = isWin 
+            ? ["/c", `g++ ${tempFilePath} -o ${exeFilePath} && ${exeFilePath}`] 
+            : ["-c", `g++ "${tempFilePath}" -o "${exeFilePath}" && "${exeFilePath}"`];
         } else {
           socket.emit("output", `Unsupported interactive language: ${language}\r\n`);
           return;
@@ -62,9 +71,12 @@ export const setupPtySocket = (io) => {
         ptyProcess.on("exit", (exitCode) => {
           socket.emit("output", `\r\n\x1b[33m--- Process exited with code ${exitCode} ---\x1b[0m\r\n`);
           ptyProcess = null;
-          // Cleanup file
-          if (fs.existsSync(tempFilePath)) {
+          // Cleanup files
+          if (tempFilePath && fs.existsSync(tempFilePath)) {
              try { fs.unlinkSync(tempFilePath); } catch(e){}
+          }
+          if (exeFilePath && fs.existsSync(exeFilePath)) {
+             try { fs.unlinkSync(exeFilePath); } catch(e){}
           }
         });
 
