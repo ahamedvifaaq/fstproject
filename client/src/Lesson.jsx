@@ -5,7 +5,7 @@ import './createlesson.css';
 import './lesson.css';
 import Sidebar from "./components/sidebar.jsx";
 import { useParams } from "react-router-dom";
-import { FaPlay, FaPause, FaDownload, FaListUl, FaChevronLeft, FaChevronRight, FaTimes } from "react-icons/fa";
+import { FaPlay, FaPause, FaDownload, FaListUl, FaChevronLeft, FaChevronRight, FaTimes, FaTrash } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import { Terminal } from "xterm";
 import { FitAddon } from "@xterm/addon-fit";
@@ -38,15 +38,22 @@ export default function Lesson() {
   const socketRef = useRef(null);
   const terminalRef = useRef(null);
   const xtermRef = useRef(null);
+  const editorInstanceRef = useRef(null); // Monaco editor instance, for direct setValue
 
   // ── Run history (code tracking) ──────────────────────────────────────
   const [runHistory, setRunHistory] = useState([]);
-  const [showHistory, setShowHistory] = useState(true);
+  const [showHistory, setShowHistory] = useState(false);
   const runOutputRef = useRef("");   // accumulates this run's terminal output
   const activeRunRef = useRef(null);  // { code, language, time } of the run in progress
 
-  // Strip ANSI escape codes so stored/displayed output is readable
-  const stripAnsi = (s) => (s || "").replace(/\x1b\[[0-9;?]*[ -/]*[@-~]/g, "");
+  // Clean terminal output for display: remove OSC (title), CSI (color/cursor)
+  // escape sequences and stray control characters that pty emits on Windows.
+  const stripAnsi = (s) => (s || "")
+    .replace(/\x1b\][^\x07\x1b]*(?:\x07|\x1b\\)/g, "") // OSC, e.g. set-window-title
+    .replace(/\x1b\[[0-9;?]*[ -/]*[@-~]/g, "")          // CSI, e.g. colors/cursor
+    .replace(/\x1b[@-Z\\-_]/g, "")                       // other single-char escapes
+    .replace(/[\x00-\x08\x0b\x0c\x0e-\x1f]/g, "")        // control chars (keep \t \n \r)
+    .replace(/\r/g, "");
 
   // ── Lesson navigation (module list + prev/next) ──────────────────────
   const [courseNav, setCourseNav] = useState(null); // { courseId, courseTitle, modules }
@@ -338,10 +345,14 @@ export default function Lesson() {
       setIsRunning(false);
       const active = activeRunRef.current;
       if (!active) return;
+      const cleanedOutput = stripAnsi(runOutputRef.current)
+        .replace(/\r/g, "")
+        .replace(/\n?--- Process exited with code .*? ---\n?/g, "")
+        .trim();
       const entry = {
         code: active.code,
         language: active.language,
-        output: stripAnsi(runOutputRef.current),
+        output: cleanedOutput,
         exitCode,
         createdAt: new Date().toISOString()
       };
@@ -486,11 +497,29 @@ export default function Lesson() {
     setIsRunning(false);
   }
 
+  // Clear all run history for this lesson
+  const clearRunHistory = () => {
+    if (runHistory.length === 0) return;
+    if (!window.confirm("Clear your entire run history for this lesson?")) return;
+    setRunHistory([]);
+    const token = localStorage.getItem("accessToken");
+    if (token) {
+      fetch(`http://localhost:5000/api/user/lesson/${lessonID}/runs`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` }
+      }).catch((err) => console.error("Could not clear run history", err));
+    }
+  };
+
   // Reload a previous run's code back into the editor
   const loadRunCode = (run) => {
     setStarted(false);     // pause so the timeline doesn't overwrite the loaded code
-    setCode(run.code);
-    currentcode.current = run.code;
+    const value = run.code || "";
+    currentcode.current = value;
+    setCode(value);
+    // Write straight into the editor instance so it always reflects, even though
+    // the editor content is normally driven via the currentcode ref.
+    if (editorInstanceRef.current) editorInstanceRef.current.setValue(value);
   };
 
   return (
@@ -552,6 +581,7 @@ export default function Lesson() {
                 height="600px"
                 width="100%"
                 language={lessonData.language || "javascript"}
+                onMount={(editor) => { editorInstanceRef.current = editor; }}
                 onChange={(value) => currentcode.current = value}
               />
             </div>
@@ -573,6 +603,14 @@ export default function Lesson() {
                   onMouseEnter={(e) => (e.currentTarget.style.color = "#a855f7")}
                   onMouseLeave={(e) => (e.currentTarget.style.color = "#94a3b8")}
                 />
+                <button
+                  className="history-toggle"
+                  onClick={() => setShowHistory(true)}
+                  title="See the code you've run"
+                >
+                  🧾 History
+                  {runHistory.length > 0 && <span className="history-count">{runHistory.length}</span>}
+                </button>
               </div>
               <button
                 onClick={() => runCode()}
@@ -621,52 +659,67 @@ export default function Lesson() {
               <div ref={terminalRef} style={{ width: "100%", height: "100%", flexGrow: 1, padding: "10px", paddingLeft: "15px" }}></div>
             </div>
 
-            {/* ── Run History (code tracking) ── */}
-            <div className="run-history">
-              <div className="run-history-head" onClick={() => setShowHistory((v) => !v)}>
-                <span>🧾 Run History ({runHistory.length})</span>
-                <span className="rh-toggle">{showHistory ? "▲" : "▼"}</span>
-              </div>
+          </div>
+        </div>
+      </div>
 
-              {showHistory && (
-                <div className="run-history-list">
-                  {runHistory.length === 0 ? (
-                    <p className="rh-empty">No runs yet. Run your code to start tracking your work.</p>
-                  ) : (
-                    runHistory.map((run, i) => (
-                      <div
-                        key={run._id || i}
-                        className="rh-item"
-                        title="Click to load this code into the editor"
-                        onClick={() => loadRunCode(run)}
-                      >
-                        <div className="rh-item-head">
-                          <span className="rh-time">
-                            {new Date(run.createdAt).toLocaleString()}
-                          </span>
-                          <span className={`rh-exit ${run.exitCode === 0 ? "ok" : "fail"}`}>
-                            {run.exitCode === 0 ? "✓ exit 0" : `exit ${run.exitCode ?? "?"}`}
-                          </span>
-                        </div>
-                        <pre className="rh-code">
-                          {(run.code || "").split("\n").slice(0, 2).join("\n") || "// (empty)"}
-                          {(run.code || "").split("\n").length > 2 ? "\n…" : ""}
-                        </pre>
-                        {run.output && (
-                          <pre className="rh-output">
-                            {stripAnsi(run.output).trim().slice(0, 220)}
-                            {stripAnsi(run.output).trim().length > 220 ? "…" : ""}
-                          </pre>
-                        )}
-                      </div>
-                    ))
-                  )}
-                </div>
+      {/* Slide-in Run History drawer */}
+      {showHistory && (
+        <div className="run-history-backdrop" onClick={() => setShowHistory(false)}>
+          <div className="run-history-drawer" onClick={(e) => e.stopPropagation()}>
+            <div className="run-history-head">
+              <span>🧾 Run History ({runHistory.length})</span>
+              <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+                <FaTrash
+                  title="Clear all run history"
+                  className="rh-clear"
+                  style={{ cursor: runHistory.length ? "pointer" : "not-allowed", opacity: runHistory.length ? 1 : 0.35 }}
+                  onClick={clearRunHistory}
+                />
+                <FaTimes style={{ cursor: "pointer" }} onClick={() => setShowHistory(false)} />
+              </div>
+            </div>
+            {runHistory.length > 0 && (
+              <p className="rh-hint">💡 This is every time you ran your code. Click a run to load that code back into the editor.</p>
+            )}
+            <div className="run-history-list">
+              {runHistory.length === 0 ? (
+                <p className="rh-empty">No runs yet. Write some code and press ▶ Run — each run is saved here.</p>
+              ) : (
+                runHistory.map((run, i) => {
+                  const out = stripAnsi(run.output || "").trim();
+                  return (
+                  <div
+                    key={run._id || i}
+                    className="rh-item"
+                    title="Load this code into the editor"
+                    onClick={() => { loadRunCode(run); setShowHistory(false); }}
+                  >
+                    <div className="rh-item-head">
+                      <span className="rh-time">{new Date(run.createdAt).toLocaleString()}</span>
+                      <span className={`rh-exit ${run.exitCode === 0 ? "ok" : "fail"}`}>
+                        {run.exitCode === 0 ? "✓ exit 0" : `exit ${run.exitCode ?? "?"}`}
+                      </span>
+                    </div>
+                    <div className="rh-label">Code</div>
+                    <pre className="rh-code">
+                      {(run.code || "").split("\n").slice(0, 3).join("\n") || "// (empty)"}
+                      {(run.code || "").split("\n").length > 3 ? "\n…" : ""}
+                    </pre>
+                    <div className="rh-label">Output</div>
+                    <pre className="rh-output">
+                      {out ? out.slice(0, 400) : "(no output)"}
+                      {out.length > 400 ? "…" : ""}
+                    </pre>
+                    <div className="rh-load">✎ Load this code into editor →</div>
+                  </div>
+                  );
+                })
               )}
             </div>
           </div>
         </div>
-      </div>
+      )}
 
       <div className="timeline">
         <div className="timer">

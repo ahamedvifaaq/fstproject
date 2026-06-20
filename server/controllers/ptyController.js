@@ -9,8 +9,10 @@ export const setupPtySocket = (io) => {
     let ptyProcess = null;
 
     socket.on("run_code", ({ code, language }) => {
-      // Cleanup existing process
+      // Cleanup existing process. Mark it "replaced" so its exit event doesn't
+      // get attributed to the new run (which would corrupt the run-history output).
       if (ptyProcess) {
+        ptyProcess.replaced = true;
         ptyProcess.kill();
         ptyProcess = null;
       }
@@ -55,30 +57,36 @@ export const setupPtySocket = (io) => {
         }
 
         // 2. Spawn PTY
-        ptyProcess = pty.spawn(cmd, args, {
+        const proc = pty.spawn(cmd, args, {
           name: "xterm-color",
           cols: 80,
           rows: 24,
           cwd: tmpDir,
           env: process.env,
         });
+        ptyProcess = proc;
 
-        // 3. Pipe PTY data to client
-        ptyProcess.on("data", (data) => {
-          socket.emit("output", data);
+        // 3. Pipe PTY data to client (only while this is the active process)
+        proc.on("data", (data) => {
+          if (!proc.replaced) socket.emit("output", data);
         });
 
-        ptyProcess.on("exit", (exitCode) => {
-          socket.emit("output", `\r\n\x1b[33m--- Process exited with code ${exitCode} ---\x1b[0m\r\n`);
-          socket.emit("run_exit", exitCode); // lets the client finalize a run-history entry
-          ptyProcess = null;
-          // Cleanup files
+        proc.on("exit", (exitCode) => {
+          // Always clean up temp files
           if (tempFilePath && fs.existsSync(tempFilePath)) {
              try { fs.unlinkSync(tempFilePath); } catch(e){}
           }
           if (exeFilePath && fs.existsSync(exeFilePath)) {
              try { fs.unlinkSync(exeFilePath); } catch(e){}
           }
+
+          // If this process was killed to start a newer run, stay quiet so its
+          // exit doesn't get logged as the new run's result.
+          if (proc.replaced) return;
+
+          socket.emit("output", `\r\n\x1b[33m--- Process exited with code ${exitCode} ---\x1b[0m\r\n`);
+          socket.emit("run_exit", exitCode); // lets the client finalize a run-history entry
+          if (ptyProcess === proc) ptyProcess = null;
         });
 
       } catch (err) {

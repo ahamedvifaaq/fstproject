@@ -41,6 +41,18 @@ export const saveCodeRun = async (req, res) => {
     }
 };
 
+// Clear the current student's entire run history for a lesson
+export const clearCodeRuns = async (req, res) => {
+    try {
+        const { lessonId } = req.params;
+        await CodeRun.deleteMany({ userId: req.user.id, lessonId });
+        res.status(200).json({ message: "Run history cleared" });
+    } catch (err) {
+        console.error("Clear code runs error:", err);
+        res.status(500).json({ message: err.message });
+    }
+};
+
 // Get the current student's run history for a lesson (newest first)
 export const getCodeRuns = async (req, res) => {
     try {

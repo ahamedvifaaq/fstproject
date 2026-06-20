@@ -36,7 +36,7 @@
 
 .editor-container{
     position: relative;
-    width: calc(75% - 10px);
+    width: calc(58% - 10px);
 }
 
 
@@ -146,7 +146,7 @@
 /* ================= OUTPUT ================= */
 
 .output{
-    width: calc(25% - 10px);
+    width: calc(42% - 10px);
     height: auto;
     border-radius: 8px;
     background-color: #252526;
