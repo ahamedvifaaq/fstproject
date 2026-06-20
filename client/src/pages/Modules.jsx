@@ -9,6 +9,7 @@ import './Module.css';
 export default function Modules() {
     const { courseId } = useParams();
     const [modules, setModules] = useState([]);
+    const [isOwner, setIsOwner] = useState(false);
     const [completedLessons, setCompletedLessons] = useState([]);
     const [open,setOpen]=useState(false);
     const navigate=useNavigate();
@@ -61,7 +62,15 @@ export default function Modules() {
             }
             return response.json(); 
         })
-        .then(data => setModules(Array.isArray(data) ? data : []))
+        .then(data => {
+            // Backend now returns { modules, isOwner }; fall back to array for safety
+            if (Array.isArray(data)) {
+                setModules(data);
+            } else {
+                setModules(Array.isArray(data.modules) ? data.modules : []);
+                setIsOwner(!!data.isOwner);
+            }
+        })
         .catch(error => console.error("Error fetching modules:", error));
 
         const currentRole = localStorage.getItem("role");
@@ -164,7 +173,7 @@ export default function Modules() {
   return (
      <div className="modules-page">
       <Sidebar title="Modules" styles={"#a855f7"} />
-      {localStorage.getItem("role") === "instructor" && (
+      {isOwner && (
         <div className='module-header'>
           <h1>Course Modules</h1>
           <button onClick={() => setMoverlay(true)}>Add Module</button>
@@ -224,7 +233,7 @@ export default function Modules() {
              <span>{module.title}</span>
              <span className="lesson-count">{module.lessons.length === 0 ? "No" : module.lessons.length} Lessons</span>
              
-             {localStorage.getItem("role") === "instructor" && (
+             {isOwner && (
                 <div className="action-buttons">
                   <button style={{padding: "6px 12px", backgroundColor: "#3b82f6", border: "none", borderRadius: "6px", color: "white", fontSize: "0.85rem"}} onClick={(e) =>{e.stopPropagation(); setOverlay(true); setLessonInfo({...lessoninfo, moduleId: module._id, title: "", language: "javascript"});}}>Add Lesson</button>
                   <button style={{padding: "6px 12px", backgroundColor: "#ef4444", border: "none", borderRadius: "6px", color: "white", fontSize: "0.85rem", cursor: "pointer"}} onClick={(e) => {e.stopPropagation(); handleDeleteModule(module._id);}}>🗑 Delete</button>
@@ -252,7 +261,7 @@ export default function Modules() {
                   </div>
                   <span style={{color: '#94a3b8', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '15px'}}>
                     {lesson.videoLength}s
-                    {localStorage.getItem("role") === "instructor" && (
+                    {isOwner && (
                       <span onClick={(e) => handleDeleteLesson(e, module._id, lessonIdString)} title="Delete Lesson" style={{display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '32px', height: '32px', borderRadius: '8px', backgroundColor: '#ef4444', color: '#fff', cursor: 'pointer', transition: 'background-color 0.15s ease'}} onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#dc2626'} onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#ef4444'}><FaTrash size={14} /></span>
                     )}
                   </span>

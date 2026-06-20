@@ -4,6 +4,10 @@ import User from "../models/User.js";
 import Review from "../models/Review.js";
 import multer from "multer"
 
+// An instructor may only modify courses they created; admins may modify any.
+const ownsCourse = (req, course) =>
+    req.user.role === "admin" || String(course.instructorId) === String(req.user._id);
+
 export const createCourse = async (req, res) => {
     const { title, description, difficulty, price, tags, instructorId } = req.body;
     console.log("Received create course request with data:", { title, description, difficulty, price, tags, instructorId });
@@ -40,6 +44,9 @@ export const addModule = async (req, res) => {
         if (!course) {
             return res.status(404).json({ message: "Course not found" });
         }
+        if (!ownsCourse(req, course)) {
+            return res.status(403).json({ message: "You can only modify your own courses." });
+        }
         const newModule = {
             title: title || `Module ${course.modules.length + 1}`
         }
@@ -62,10 +69,13 @@ export const createLesson = async (req, res) => {
         if (!course) {
             return res.status(404).json({ message: "Course not found" });
         }
+        if (!ownsCourse(req, course)) {
+            return res.status(403).json({ message: "You can only modify your own courses." });
+        }
         const module = course.modules.id(moduleId);
         if (!module) {
             return res.status(404).json({ message: "Module not found" });
-        
+
         }
 
         
@@ -217,7 +227,8 @@ export const getCourseModules = async (req, res) => {
         if (!course) {
             return res.status(404).json({ message: "Course not found" });
         }
-        res.status(200).json(course.modules);
+        // isOwner lets the client show edit controls only to the course's instructor
+        res.status(200).json({ modules: course.modules, isOwner: ownsCourse(req, course) });
     } catch (err) {
         console.error("Get course modules error:", err);
         res.status(500).json({ message: "Server error", error: err.message });
@@ -248,6 +259,7 @@ export const deleteModule = async (req, res) => {
         const { courseId, moduleId } = req.params;
         const course = await Course.findById(courseId);
         if (!course) return res.status(404).json({ message: "Course not found" });
+        if (!ownsCourse(req, course)) return res.status(403).json({ message: "You can only modify your own courses." });
 
         course.modules = course.modules.filter(m => String(m._id) !== String(moduleId));
         await course.save();
@@ -264,6 +276,7 @@ export const deleteLesson = async (req, res) => {
         const { courseId, moduleId, lessonId } = req.params;
         const course = await Course.findById(courseId);
         if (!course) return res.status(404).json({ message: "Course not found" });
+        if (!ownsCourse(req, course)) return res.status(403).json({ message: "You can only modify your own courses." });
 
         const module = course.modules.id(moduleId);
         if (!module) return res.status(404).json({ message: "Module not found" });
