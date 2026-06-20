@@ -63,15 +63,18 @@ export const markLessonCompleted = async (req, res) => {
             enrolled = user.enrolledCourses[user.enrolledCourses.length - 1];
         }
 
+        // Record activity for analytics on every completion event
+        enrolled.lastActiveAt = new Date();
+
         // Add lesson if not already there
         if (!enrolled.completedLessons.includes(lessonId)) {
             enrolled.completedLessons.push(lessonId);
-            
+
             // Calculate progress naively based on scale of 10
             enrolled.progress = Math.min(100, Math.round((enrolled.completedLessons.length / 10) * 100));
-            
-            await user.save();
         }
+
+        await user.save();
 
         res.json({ message: "Lesson marked as completed", enrolled });
     } catch (err) {

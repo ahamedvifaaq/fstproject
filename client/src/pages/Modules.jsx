@@ -2,6 +2,8 @@ import React from 'react'
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import Sidebar from '../components/sidebar';
+import CourseReviews from '../components/CourseReviews';
+import { FaTrash } from 'react-icons/fa';
 import './Module.css';
 
 export default function Modules() {
@@ -62,7 +64,8 @@ export default function Modules() {
         .then(data => setModules(Array.isArray(data) ? data : []))
         .catch(error => console.error("Error fetching modules:", error));
 
-        if (token && localStorage.getItem("role") !== "instructor") {
+        const currentRole = localStorage.getItem("role");
+        if (token && currentRole !== "instructor" && currentRole !== "admin") {
             // Auto-enroll when student visits course
             fetch(`http://localhost:5000/api/course/${courseId}/enroll`, {
                 method: "POST",
@@ -250,7 +253,7 @@ export default function Modules() {
                   <span style={{color: '#94a3b8', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '15px'}}>
                     {lesson.videoLength}s
                     {localStorage.getItem("role") === "instructor" && (
-                      <span onClick={(e) => handleDeleteLesson(e, module._id, lessonIdString)} style={{color: '#ef4444', fontSize: '1.2rem', cursor:'pointer'}} title="Delete Lesson">🗑</span>
+                      <span onClick={(e) => handleDeleteLesson(e, module._id, lessonIdString)} title="Delete Lesson" style={{display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '32px', height: '32px', borderRadius: '8px', backgroundColor: '#ef4444', color: '#fff', cursor: 'pointer', transition: 'background-color 0.15s ease'}} onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#dc2626'} onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#ef4444'}><FaTrash size={14} /></span>
                     )}
                   </span>
                 </li>
@@ -263,7 +266,9 @@ export default function Modules() {
 
       ))}
       </div>
-    </div> 
+
+      <CourseReviews courseId={courseId} />
+    </div>
 )}
 
     

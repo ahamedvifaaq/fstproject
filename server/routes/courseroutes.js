@@ -1,5 +1,7 @@
 import express from "express";
 import { createCourse , addModule ,createLesson, getLesson,runCode,getAllCourses,getCourseModules,uploadAudio, deleteModule, deleteLesson, enrollCourse } from "../controllers/coursecontroller.js";
+import { addOrUpdateReview, getCourseReviews, deleteReview } from "../controllers/reviewcontroller.js";
+import { getCourseMembers, getInstructorAnalytics } from "../controllers/analyticscontroller.js";
 import { protect } from "../middleware/auth.js";
 import { authorize } from "../middleware/roleMiddleware.js";
 
@@ -22,6 +24,15 @@ router.get("/lesson/:id", protect, getLesson);
 router.get("/course/:courseId/modules", protect, getCourseModules);
 router.post("/course/:courseId/enroll", protect, enrollCourse);
 router.post("/output", protect, runCode);
+
+// Course ratings & feedback
+router.get("/course/:courseId/reviews", protect, getCourseReviews);
+router.post("/course/:courseId/review", protect, addOrUpdateReview);
+router.delete("/course/:courseId/review", protect, deleteReview);
+
+// Course members & instructor analytics
+router.get("/course/:courseId/members", protect, authorize("instructor", "admin"), getCourseMembers);
+router.get("/instructor/analytics", protect, authorize("instructor", "admin"), getInstructorAnalytics);
 
 
 export default router;

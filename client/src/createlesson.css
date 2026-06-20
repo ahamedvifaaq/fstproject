@@ -43,26 +43,103 @@
 
 /* Toolbar */
 
+/* Recording status bar */
+.rec-status-bar{
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background-color: #252526;
+    border: 1px solid #333;
+    border-radius: 10px;
+    padding: 10px 18px;
+    margin-bottom: 12px;
+    box-sizing: border-box;
+}
+
+.rec-status{
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 700;
+    font-size: 0.95rem;
+}
+
+.rec-status.idle{ color: #94a3b8; }
+.rec-status.recording{ color: #ef4444; }
+.rec-status.paused{ color: #eab308; }
+.rec-status.saving{ color: #a855f7; }
+
+.rec-dot{
+    font-size: 0.7rem;
+    animation: rec-pulse 1s infinite ease-in-out;
+}
+
+@keyframes rec-pulse{
+    0%, 100%{ opacity: 1; }
+    50%{ opacity: 0.25; }
+}
+
+.rec-spinner{
+    width: 14px;
+    height: 14px;
+    border: 2px solid rgba(168, 85, 247, 0.3);
+    border-top-color: #a855f7;
+    border-radius: 50%;
+    display: inline-block;
+    animation: rec-spin 0.7s linear infinite;
+}
+
+@keyframes rec-spin{
+    to{ transform: rotate(360deg); }
+}
+
+.rec-timer{
+    font-family: 'Fira Code', Consolas, monospace;
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: #e2e8f0;
+    letter-spacing: 1px;
+}
+
 .toolbar{
     width: 100%;
     display: flex;
     justify-content: flex-end;
-    margin-bottom: -10px;
+    gap: 8px;
+    margin-bottom: 4px;
     z-index: 10;
 }
 
-.toolbar button{
-    margin-left: 8px;
-    padding: 6px 14px;
-    background-color: #3b82f6;
+.tool-btn{
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
     border: none;
     color: white;
-    border-radius: 4px;
+    border-radius: 6px;
     cursor: pointer;
+    font-weight: 600;
+    font-size: 0.88rem;
+    transition: all 0.15s ease;
 }
 
-.toolbar button:hover{
-    background-color: #2563eb;
+.tool-btn.start{ background-color: #22c55e; }
+.tool-btn.start:hover:not(:disabled){ background-color: #16a34a; }
+
+.tool-btn.pause{ background-color: #eab308; }
+.tool-btn.pause:hover:not(:disabled){ background-color: #ca8a04; }
+
+.tool-btn.reset{ background-color: #475569; }
+.tool-btn.reset:hover:not(:disabled){ background-color: #334155; }
+
+.tool-btn.save{ background-color: #a855f7; }
+.tool-btn.save:hover:not(:disabled){ background-color: #9333ea; }
+
+.tool-btn:disabled{
+    opacity: 0.4;
+    cursor: not-allowed;
 }
 
 

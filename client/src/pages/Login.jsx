@@ -25,9 +25,10 @@ export default function Login() {
       localStorage.setItem("accessToken", res.data.accessToken);
       localStorage.setItem("role", res.data.role);
       localStorage.setItem("userId", res.data.id);
-      
+      localStorage.setItem("instructorStatus", res.data.instructorStatus || "");
 
-      navigate("/courses");
+
+      navigate(res.data.role === "admin" ? "/admin" : "/courses");
 
     } catch (err) {
 

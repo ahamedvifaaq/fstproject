@@ -38,9 +38,16 @@ export default function Sidebar({title,styles}) {
                     <li onClick={() => {setShowSidebar(false); navigate('/Lesson');}}><Link to="/Lesson">Home</Link></li>
                     <li onClick={() => {setShowSidebar(false); navigate('/courses');}}><Link to="/courses">Courses</Link></li>
                     <li onClick={() => {setShowSidebar(false); navigate('/profile');}}><Link to="/profile">Profile</Link></li>
+                    {localStorage.getItem("role") === "instructor" && (
+                        <li onClick={() => {setShowSidebar(false); navigate('/analytics');}}><Link to="/analytics">Analytics</Link></li>
+                    )}
+                    {localStorage.getItem("role") === "admin" && (
+                        <li onClick={() => {setShowSidebar(false); navigate('/admin');}}><Link to="/admin">Admin</Link></li>
+                    )}
                     <li onClick={() => {
                         setShowSidebar(false);
                         localStorage.removeItem("accessToken");
+                        localStorage.removeItem("instructorStatus");
                         window.location.href = "/";
                     }}>
                         <a href="/">Logout</a>

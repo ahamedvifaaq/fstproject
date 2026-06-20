@@ -11,6 +11,12 @@ const enrolledCourseSchema = new Schema(
         default: Date.now
     },
 
+    // Last time the student made progress in this course (used for active/inactive analytics)
+    lastActiveAt: {
+        type: Date,
+        default: Date.now
+    },
+
     progress: {
         type: Number,
         default: 0
@@ -50,6 +56,14 @@ const userSchema = new Schema(
         type: String,
         enum: ["student", "instructor", "admin"],
         default: "student"
+    },
+
+    // Instructor verification — instructors must be approved by an admin
+    // before they are allowed to create courses.
+    instructorStatus: {
+        type: String,
+        enum: ["pending", "approved", "rejected"],
+        default: "pending"
     },
 
     bio:{

@@ -5,7 +5,7 @@ import './createlesson.css';
 import './lesson.css';
 import Sidebar from "./components/sidebar.jsx";
 import { useParams } from "react-router-dom";
-import { FaPlay, FaPause } from "react-icons/fa";
+import { FaPlay, FaPause, FaDownload } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import { Terminal } from "xterm";
 import { FitAddon } from "@xterm/addon-fit";
@@ -49,12 +49,41 @@ export default function Lesson() {
   const startLoop = () => {
     cancelAnimationFrame(animFrameRef.current);
 
+    const finishLesson = () => {
+      startedRef.current = false;
+      setStarted(false);
+
+      // Snap the timeline to the very end so it visually completes
+      const total = lessonDataRef.current.videoLength;
+      currentTimeRef.current = total;
+      setcurrentTime(total);
+      if (sliderRef.current) sliderRef.current.value = total;
+
+      const token = localStorage.getItem("accessToken");
+      if (token) {
+        fetch(`http://localhost:5000/api/user/lesson/${lessonID}/complete`, {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${token}` }
+        }).then(() => {
+          navigate(0);
+        }).catch(err => {
+          console.error("Could not mark lesson complete", err);
+          navigate(0);
+        });
+      } else {
+        navigate(0);
+      }
+    };
+
     const tick = () => {
       if (!audioRef.current || !startedRef.current) return;
 
-      // ✅ Read time directly from audio — no drift possible
-      const t = Math.floor(audioRef.current.currentTime);
+      const audio = audioRef.current;
 
+      // ✅ Read time directly from audio — no drift possible
+      const t = Math.floor(audio.currentTime);
+
+      // Update code/slider only when the whole second changes
       if (t !== currentTimeRef.current) {
         currentTimeRef.current = t;
         setcurrentTime(t);
@@ -70,7 +99,7 @@ export default function Lesson() {
         if (currentStep) {
           setCode(currentStep.codeSnapshot);
           currentcode.current = currentStep.codeSnapshot;
-          
+
           if (currentStep.outputSnapshot !== undefined && currentStep.outputSnapshot !== null) {
               if (currentStep.outputSnapshot !== currentOutputRef.current) {
                   if (xtermRef.current) {
@@ -81,27 +110,20 @@ export default function Lesson() {
               }
           }
         }
+      }
 
-        // ✅ check end using audio duration — not videoLength
-        if (audioRef.current.ended || t >= lessonDataRef.current.videoLength) {
-          startedRef.current = false;
-          setStarted(false);
-          const token = localStorage.getItem("accessToken");
-          if (token) {
-              fetch(`http://localhost:5000/api/user/lesson/${lessonID}/complete`, {
-                  method: 'POST',
-                  headers: { 'Authorization': `Bearer ${token}` }
-              }).then(() => {
-                  navigate(0);
-              }).catch(err => {
-                  console.error("Could not mark lesson complete", err);
-                  navigate(0);
-              });
-          } else {
-              navigate(0);
-          }
-          return;
-        }
+      // ✅ Completion is checked every frame (not gated by the second change),
+      // so it triggers even when the audio ends mid-second or its duration is
+      // slightly shorter than videoLength.
+      const dur = audio.duration;
+      const reachedEnd =
+        audio.ended ||
+        (Number.isFinite(dur) && dur > 0 && audio.currentTime >= dur - 0.25) ||
+        t >= lessonDataRef.current.videoLength;
+
+      if (reachedEnd) {
+        finishLesson();
+        return;
       }
 
       animFrameRef.current = requestAnimationFrame(tick);
@@ -306,6 +328,39 @@ export default function Lesson() {
     }
   }, [speed]);
 
+  // Map languages to file extensions for the download feature
+  const EXTENSION_MAP = {
+    javascript: "js", typescript: "ts", python: "py", java: "java",
+    c: "c", cpp: "cpp", csharp: "cs", go: "go", rust: "rs",
+    php: "php", ruby: "rb", swift: "swift", kotlin: "kt", r: "r",
+    scala: "scala", sql: "sql", shell: "sh", bash: "sh", pascal: "pas",
+    perl: "pl", lua: "lua", haskell: "hs", clojure: "clj", fsharp: "fs",
+    vb: "vb", "objective-c": "m", plaintext: "txt"
+  };
+
+  function downloadCode() {
+    const source = currentcode.current ?? code ?? "";
+    if (!source.trim()) {
+      alert("There is no code to download yet.");
+      return;
+    }
+    const lang = lessonData.language || "javascript";
+    const ext = EXTENSION_MAP[lang] || "txt";
+    const safeTitle = (lessonData.title || "code")
+      .replace(/[^a-z0-9_-]+/gi, "_")
+      .toLowerCase();
+
+    const blob = new Blob([source], { type: "text/plain;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${safeTitle}.${ext}`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+
   async function runCode() {
     setIsRunning(true);
     if (xtermRef.current) {
@@ -344,24 +399,39 @@ export default function Lesson() {
           </div>
           <div className='output' style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
             
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-              <h3 style={{ margin: 0, color: "#fff", fontWeight: 600 }}>Code Execution</h3>
-              <button 
-                onClick={() => runCode()} 
-                disabled={isRunning} 
-                style={{ 
-                  padding: "10px 20px", 
-                  backgroundColor: "#a855f7", 
-                  color: "white", 
-                  border: "none", 
-                  borderRadius: "8px", 
-                  cursor: isRunning ? "not-allowed" : "pointer", 
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: "16px", padding: "0 4px" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "14px" }}>
+                <h3 style={{ margin: 0, color: "#fff", fontWeight: 600 }}>Code Execution</h3>
+                <FaDownload
+                  onClick={() => downloadCode()}
+                  title="Download code"
+                  style={{
+                    color: "#94a3b8",
+                    cursor: "pointer",
+                    fontSize: "16px",
+                    transition: "color 0.2s ease"
+                  }}
+                  onMouseEnter={(e) => (e.currentTarget.style.color = "#a855f7")}
+                  onMouseLeave={(e) => (e.currentTarget.style.color = "#94a3b8")}
+                />
+              </div>
+              <button
+                onClick={() => runCode()}
+                disabled={isRunning}
+                style={{
+                  padding: "7px 14px",
+                  backgroundColor: "#a855f7",
+                  color: "white",
+                  border: "none",
+                  borderRadius: "8px",
+                  cursor: isRunning ? "not-allowed" : "pointer",
                   opacity: isRunning ? 0.7 : 1,
                   fontWeight: "bold",
+                  fontSize: "0.9rem",
                   boxShadow: "0 4px 14px 0 rgba(168, 85, 247, 0.39)",
                   transition: "all 0.2s ease"
                 }}>
-                {isRunning ? "Running..." : "▶ Run code"}
+                {isRunning ? "Running..." : "▶ Run"}
               </button>
             </div>
             

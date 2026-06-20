@@ -12,6 +12,7 @@ import passport from "./config/passport.js";
 import authRoutes from "./routes/authroutes.js";
 import courseRoutes from "./routes/courseroutes.js";
 import profileroutes from"./routes/profileRoutes.js"
+import adminRoutes from "./routes/adminRoutes.js";
 import path from "path";
 import { fileURLToPath } from "url";
 
@@ -64,6 +65,7 @@ app.use("/uploads", (req, res, next) => {
 app.use("/api/auth", authRoutes);
 app.use("/api", courseRoutes);
 app.use("/api/user",profileroutes);
+app.use("/api/admin", adminRoutes);
 
 /* ---------- Test Route ---------- */
 

@@ -1,6 +1,7 @@
 import Course from "../models/Course.js";
 import Lesson from "../models/Lesson.js";
 import User from "../models/User.js";
+import Review from "../models/Review.js";
 import multer from "multer"
 
 export const createCourse = async (req, res) => {
@@ -9,6 +10,10 @@ export const createCourse = async (req, res) => {
     try {
         if (!title || !instructorId) {
             return res.status(400).json({ message: "Title and instructorId are required" });
+        }
+        // Instructors must be approved by an admin before creating courses (admins bypass)
+        if (req.user.role === "instructor" && req.user.instructorStatus !== "approved") {
+            return res.status(403).json({ message: "Your instructor account is pending admin approval. You cannot create courses yet." });
         }
         const newCourse = await Course.create({
             title,
@@ -169,8 +174,36 @@ export const runCode = async (req, res) => {
 export const getAllCourses = async (req, res) => {
     console.log("Received request to get all courses");
     try {
-        const courses = await Course.find();
-        res.status(200).json({courses,role: req.user.role});
+        const courses = await Course.find()
+            .populate("instructorId", "username")
+            .lean();
+
+        // Aggregate average rating and review count per course
+        const ratingStats = await Review.aggregate([
+            {
+                $group: {
+                    _id: "$courseId",
+                    averageRating: { $avg: "$rating" },
+                    reviewCount: { $sum: 1 }
+                }
+            }
+        ]);
+        const statsMap = {};
+        ratingStats.forEach(s => {
+            statsMap[String(s._id)] = {
+                averageRating: Math.round(s.averageRating * 10) / 10,
+                reviewCount: s.reviewCount
+            };
+        });
+
+        const coursesWithRatings = courses.map(course => ({
+            ...course,
+            instructorName: course.instructorId?.username || "Unknown",
+            averageRating: statsMap[String(course._id)]?.averageRating || 0,
+            reviewCount: statsMap[String(course._id)]?.reviewCount || 0
+        }));
+
+        res.status(200).json({ courses: coursesWithRatings, role: req.user.role, instructorStatus: req.user.instructorStatus });
     } catch (err) {
         console.error("Get all courses error:", err);
         res.status(500).json({ message: "Server error", error: err.message });

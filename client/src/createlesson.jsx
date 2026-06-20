@@ -3,14 +3,16 @@ import { useEffect, useState, useRef } from 'react'
 import React from 'react'
 import './createlesson.css'
 import Sidebar from "./components/sidebar.jsx";
-import { UNSAFE_RSCDefaultRootErrorBoundary, unstable_useRoute, useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { Terminal } from "xterm";
 import { FitAddon } from "@xterm/addon-fit";
 import "xterm/css/xterm.css";
 import { io } from "socket.io-client";
+import { FaPlay, FaPause, FaCircle, FaSave, FaRedo } from "react-icons/fa";
 
 export default function createlesson() {
   const { courseId, moduleId, title, language } = useParams();
+  const navigate = useNavigate();
 
   const [showSidebar, setShowSidebar] = useState(false);
   const [content, setContent] = useState("");
@@ -26,6 +28,7 @@ export default function createlesson() {
   const [isRunning, setIsRunning] = useState(false);
   const [isplayaing, setisplaying] = useState(false);
   const [timeline, setTimeline] = useState([]);
+  const timelineRef = useRef([]); // authoritative copy — avoids stale-closure on save
   let interval = useRef(null);
   var currentTime = useRef(-1);
   var isreset = useRef(false);
@@ -36,7 +39,11 @@ export default function createlesson() {
 
   const [isRecording, setIsRecording] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [elapsed, setElapsed] = useState(0); // seconds recorded, for the live timer
   const [audioURL, setAudioURL] = useState(null);
+
+  const formatTime = (s) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
   var url = useRef("");
   var uploadData = useRef("");
 
@@ -118,8 +125,11 @@ export default function createlesson() {
           codeSnapshot: currentcode.current,
           outputSnapshot: currentOutput.current
         };
-        timeline.push(newEntry);
-        setTimeline([...timeline]);
+        // Push to the ref (always current) and mirror to state for UI
+        timelineRef.current = [...timelineRef.current, newEntry];
+        setTimeline(timelineRef.current);
+        setElapsed(timelineRef.current.length); // live timer
+
       }, 1000);
     }
     return () => clearInterval(interval.current);
@@ -155,13 +165,27 @@ export default function createlesson() {
 
 
   async function saveLesson(audiou) {
+    // Read from the ref so we always save the full recording, even after pause/resume
+    const recordedTimeline = timelineRef.current;
+
+    if (!audiou || audiou === "not working") {
+      setIsSaving(false);
+      alert("Recording could not be saved: the audio failed to upload. Please record the lesson again.");
+      return;
+    }
+    if (recordedTimeline.length === 0) {
+      setIsSaving(false);
+      alert("Recording could not be saved: no timeline was captured. Please record the lesson again.");
+      return;
+    }
+
     const lessonData = {
       "courseId": courseId,
       "moduleId": moduleId,
       "title": title,
       "language": language,
-      "videoLength": currentTime.current + 1,
-      "audioUrl": audiou || "not working"//not coming correct url simply coming null
+      "videoLength": recordedTimeline.length,
+      "audioUrl": audiou
     };
     const token = localStorage.getItem("accessToken");
     const response = await fetch('http://localhost:5000/api/createlesson', {
@@ -170,10 +194,14 @@ export default function createlesson() {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${token}`
       },
-      body: JSON.stringify({ ...lessonData, timeline: timeline })
+      body: JSON.stringify({ ...lessonData, timeline: recordedTimeline })
     });
+    setIsSaving(false);
     if (response.status === 200) {
       alert('Lesson saved successfully!');
+      // Return to the course's module list after saving
+      navigate(`/course/${courseId}/modules`);
+      return;
     }
     if (response.status === 401) {
       localStorage.removeItem("accessToken");
@@ -184,6 +212,11 @@ export default function createlesson() {
   }
 
   const startRecording = async () => {
+    // Guard against a second Start while already recording — a duplicate recorder
+    // would interleave chunks into audioChunksRef and corrupt the audio.
+    if (mediaRecorderRef.current?.state === "recording") {
+      return;
+    }
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
 
@@ -194,6 +227,7 @@ export default function createlesson() {
         mimeType ? { mimeType } : {}  // only pass if supported
       );
       mediaRecorderRef.current = recorder;
+      audioChunksRef.current = []; // start clean so leftover chunks can't corrupt the blob
       recorder.ondataavailable = (e) => {
         if (e.data.size > 0) {
           audioChunksRef.current.push(e.data);
@@ -208,22 +242,32 @@ export default function createlesson() {
         const au = URL.createObjectURL(blob);
         url.current = au;
         setAudioURL(url.current);
-        console.log("Recording stopped. Audio URL:", url.current);
-        console.log("au", au);
+        console.log("Recording stopped. Audio URL:", url.current, "size:", blob.size);
         if (!isreset.current) {
-          await uploaddatas(blob, mimeType);
-          saveLesson(uploadData.current);
+          // No usable audio captured — don't save a lesson that can never play
+          if (blob.size === 0) {
+            setIsSaving(false);
+            alert("No audio was captured. Please check your microphone and record the lesson again.");
+            audioChunksRef.current = [];
+            return;
+          }
+          try {
+            await uploaddatas(blob, mimeType);
+            await saveLesson(uploadData.current);
+          } catch (err) {
+            console.error("Lesson save failed:", err);
+            setIsSaving(false);
+            alert("Failed to upload audio or save the lesson. Please try recording again.");
+          }
         }
-
-
-        //here coming correct url
-
 
         // reset
         audioChunksRef.current = [];
       };
 
-      recorder.start();
+      // Collect a chunk every second so audio is reliably captured even if the
+      // recording is stopped abruptly (avoids empty/partial blobs).
+      recorder.start(1000);
       setIsRecording(true);
       setIsPaused(false);
 
@@ -293,16 +337,51 @@ export default function createlesson() {
       <Sidebar title={`lesson : ${title}`} styles={"#a855f7"} />
 
       <div className='createlesson'>
+        {/* Recording status bar — clear feedback for what's happening */}
+        <div className="rec-status-bar">
+          <div className={`rec-status ${isSaving ? "saving" : isRecording && !isPaused ? "recording" : isPaused ? "paused" : "idle"}`}>
+            {isSaving ? (
+              <><span className="rec-spinner" /> Saving lesson…</>
+            ) : isRecording && !isPaused ? (
+              <><FaCircle className="rec-dot" /> Recording</>
+            ) : isPaused ? (
+              <><FaPause /> Paused</>
+            ) : (
+              <>● Ready to record</>
+            )}
+          </div>
+          <div className="rec-timer">⏱ {formatTime(elapsed)}</div>
+        </div>
+
         <div className='toolbar'>
-          <button onClick={() => { isreset.current = false; if (!isPaused) { setisplaying(true); startRecording(); } else { resumeRecording(); setisplaying(true); } }}>{!isPaused ? "Start" : "Resume"}</button>
-          <button onClick={() => { isreset.current = false; setisplaying(false); pauseRecording(); }}>Pause</button>
-          <button onClick={() => {
+          <button
+            className="tool-btn start"
+            disabled={isSaving || (isRecording && !isPaused)}
+            onClick={() => { isreset.current = false; if (!isPaused) { setisplaying(true); startRecording(); } else { resumeRecording(); setisplaying(true); } }}
+          >
+            <FaPlay size={12} /> {isPaused ? "Resume" : "Start"}
+          </button>
+
+          <button
+            className="tool-btn pause"
+            disabled={isSaving || !isRecording || isPaused}
+            onClick={() => { isreset.current = false; setisplaying(false); pauseRecording(); }}
+          >
+            <FaPause size={12} /> Pause
+          </button>
+
+          <button
+            className="tool-btn reset"
+            disabled={isSaving}
+            onClick={() => {
             clearInterval(interval.current);
+            timelineRef.current = [];
             setTimeline([]);
             setCode("");
             setContent("");
             currentOutput.current = "";
             currentTime.current = -1;
+            setElapsed(0);
             setisplaying(false);
             isreset.current = true;
             stopRecording();
@@ -311,21 +390,21 @@ export default function createlesson() {
 
 
 
-          }}>reset</button>
-          <button
-            onClick={() => {
-              console.log(timeline);
-              isreset.current = false;
+          }}><FaRedo size={12} /> Reset</button>
 
+          <button
+            className="tool-btn save"
+            disabled={isSaving || (elapsed === 0 && !isRecording)}
+            onClick={() => {
+              isreset.current = false;
+              setIsSaving(true);
               setisplaying(false);
               stopRecording();
-              console.log("Audio URL to save:", url.current); //not comming
-              // console.log(url.current);
-              // saveLesson();
-
-              clearInterval(interval.current)
+              clearInterval(interval.current);
             }}
-          >Save</button>
+          >
+            <FaSave size={12} /> {isSaving ? "Saving…" : "Save"}
+          </button>
         </div>
 
         <div className='editor-container'>
