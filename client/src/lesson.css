@@ -43,6 +43,126 @@ body {
   border-bottom: 15px solid transparent;
 }
 
+/* Lesson list toggle button — lives in the top-bar next to the title */
+.lesson-list-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: #a855f7;
+  color: #fff;
+  border: none;
+  border-radius: 999px;
+  padding: 8px 16px;
+  font-weight: 700;
+  font-size: 0.85rem;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(168, 85, 247, 0.4);
+  white-space: nowrap;
+}
+
+.lesson-list-toggle:hover { background: #9333ea; }
+
+/* Slide-in lesson list panel */
+.lesson-list-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(2px);
+  z-index: 4000;
+}
+
+.lesson-list-panel {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 340px;
+  max-width: 85vw;
+  height: 100vh;
+  background: #0f172a;
+  border-right: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 6px 0 30px rgba(0, 0, 0, 0.5);
+  display: flex;
+  flex-direction: column;
+  animation: llp-slide 0.2s ease;
+}
+
+@keyframes llp-slide {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(0); }
+}
+
+.llp-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 18px;
+  color: #fff;
+  font-weight: 800;
+  font-size: 1.05rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.llp-body {
+  overflow-y: auto;
+  padding: 12px;
+  flex: 1;
+}
+
+.llp-module { margin-bottom: 16px; }
+
+.llp-module-title {
+  color: #a855f7;
+  font-weight: 700;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin: 6px 6px 8px;
+}
+
+.llp-lesson {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  color: #cbd5e1;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.llp-lesson:hover { background: rgba(255, 255, 255, 0.05); color: #fff; }
+
+.llp-lesson.active {
+  background: rgba(168, 85, 247, 0.15);
+  border: 1px solid rgba(168, 85, 247, 0.5);
+  color: #fff;
+  font-weight: 700;
+}
+
+.llp-status {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7rem;
+  color: #64748b;
+  border: 1px solid #475569;
+  flex-shrink: 0;
+}
+
+.llp-status.done {
+  background: #4ade80;
+  color: #0f172a;
+  border-color: #4ade80;
+  font-weight: 900;
+}
+
+.llp-lesson-title { flex: 1; font-size: 0.9rem; }
+
+.llp-now { color: #a855f7; }
+
 /* Run History (code tracking) */
 .run-history {
   background-color: #0f111a;

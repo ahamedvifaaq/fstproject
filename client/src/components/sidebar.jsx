@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom";
 
 
 
-export default function Sidebar({title,styles}) {
+export default function Sidebar({title,styles,children}) {
       const [showSidebar,setShowSidebar]=useState(false);
       const navigate = useNavigate();
   
@@ -60,6 +60,12 @@ export default function Sidebar({title,styles}) {
         <h2 className="lesson-title gradient-text-header">
             {title}
         </h2>
+
+        {children && (
+            <div className="top-bar-actions" style={{ marginLeft: "auto" }}>
+                {children}
+            </div>
+        )}
     </div>
     </>
   );

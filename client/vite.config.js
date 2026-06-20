@@ -10,6 +10,18 @@ export default defineConfig({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  // Pre-bundle heavy deps up front so Vite doesn't re-optimize mid-session
+  // (avoids the slow first hit when a lesson page pulls these in).
+  optimizeDeps: {
+    include: [
+      '@monaco-editor/react',
+      'xterm',
+      '@xterm/addon-fit',
+      'socket.io-client',
+      'axios',
+      'react-icons/fa',
+    ],
+  },
   server: {
     headers: {
       'Cross-Origin-Opener-Policy': 'same-origin',

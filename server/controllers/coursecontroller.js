@@ -96,8 +96,25 @@ export const createLesson = async (req, res) => {
         res.status(500).json({ message: "Server error", error: err.message });
     }
 };
+// Returns the course (modules + lessons) that contains a given lesson,
+// so the lesson player can show a navigable lesson list and prev/next.
+export const getLessonCourse = async (req, res) => {
+    const lessonId = req.params.lessonId;
+    try {
+        const course = await Course.findOne({ "modules.lessons.lessonId": lessonId })
+            .select("title modules");
+        if (!course) {
+            return res.status(404).json({ message: "Course not found for this lesson" });
+        }
+        res.status(200).json({ courseId: course._id, courseTitle: course.title, modules: course.modules });
+    } catch (err) {
+        console.error("Get lesson course error:", err);
+        res.status(500).json({ message: "Server error", error: err.message });
+    }
+};
+
 export const getLesson = async (req, res) => {
-  
+
     const lessonId = req.params.id;
     try {
         const lesson = await Lesson.findById(lessonId);

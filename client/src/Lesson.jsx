@@ -5,7 +5,7 @@ import './createlesson.css';
 import './lesson.css';
 import Sidebar from "./components/sidebar.jsx";
 import { useParams } from "react-router-dom";
-import { FaPlay, FaPause, FaDownload } from "react-icons/fa";
+import { FaPlay, FaPause, FaDownload, FaListUl, FaChevronLeft, FaChevronRight, FaTimes } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import { Terminal } from "xterm";
 import { FitAddon } from "@xterm/addon-fit";
@@ -48,6 +48,30 @@ export default function Lesson() {
   // Strip ANSI escape codes so stored/displayed output is readable
   const stripAnsi = (s) => (s || "").replace(/\x1b\[[0-9;?]*[ -/]*[@-~]/g, "");
 
+  // ── Lesson navigation (module list + prev/next) ──────────────────────
+  const [courseNav, setCourseNav] = useState(null); // { courseId, courseTitle, modules }
+  const [navCompleted, setNavCompleted] = useState([]);
+  const [showLessonList, setShowLessonList] = useState(false);
+  const nextLessonRef = useRef(null); // kept current so auto-advance works inside the rAF loop
+
+  // Flatten lessons in order with their module title
+  const orderedLessons = (courseNav?.modules || []).flatMap((m) => {
+    const seen = new Set();
+    return (m.lessons || [])
+      .map((l) => ({ id: String(l.lessonId?._id || l.lessonId), title: l.title, moduleTitle: m.title }))
+      .filter((l) => (seen.has(l.id) ? false : (seen.add(l.id), true)));
+  });
+  const currentIndex = orderedLessons.findIndex((l) => l.id === String(lessonID));
+  const prevLesson = currentIndex > 0 ? orderedLessons[currentIndex - 1] : null;
+  const nextLesson = currentIndex >= 0 && currentIndex < orderedLessons.length - 1 ? orderedLessons[currentIndex + 1] : null;
+  nextLessonRef.current = nextLesson; // keep the ref in sync for finishLesson()
+
+  // Full page navigation so the player fully re-mounts for the new lesson
+  const goToLesson = (l) => {
+    if (!l) return;
+    window.location.href = `/lesson/${l.id}/${encodeURIComponent(l.moduleTitle || mtitle)}`;
+  };
+
   const getAudioUrl = (url) => {
     if (!url || url === "not working") return null;
     if (url.startsWith("http") || url.startsWith("blob:")) return url;
@@ -68,19 +92,27 @@ export default function Lesson() {
       setcurrentTime(total);
       if (sliderRef.current) sliderRef.current.value = total;
 
+      // Advance to the next lesson if there is one; otherwise reload
+      const go = () => {
+        const next = nextLessonRef.current;
+        if (next && next.id) {
+          window.location.href = `/lesson/${next.id}/${encodeURIComponent(next.moduleTitle || mtitle)}`;
+        } else {
+          navigate(0);
+        }
+      };
+
       const token = localStorage.getItem("accessToken");
       if (token) {
         fetch(`http://localhost:5000/api/user/lesson/${lessonID}/complete`, {
           method: 'POST',
           headers: { 'Authorization': `Bearer ${token}` }
-        }).then(() => {
-          navigate(0);
-        }).catch(err => {
+        }).then(go).catch(err => {
           console.error("Could not mark lesson complete", err);
-          navigate(0);
+          go();
         });
       } else {
-        navigate(0);
+        go();
       }
     };
 
@@ -213,6 +245,33 @@ export default function Lesson() {
       }
     } catch (err) {
       console.error("Could not load run history", err);
+    }
+
+    // Load the course's lesson list (for the module panel + prev/next)
+    try {
+      const navRes = await fetch(`http://localhost:5000/api/lesson/${lessonID}/course`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (navRes.ok) {
+        const navData = await navRes.json();
+        setCourseNav(navData);
+
+        // Completed lessons for this course (to mark them in the panel)
+        const profRes = await fetch(`http://localhost:5000/api/user/profilepage`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        if (profRes.ok) {
+          const userData = await profRes.json();
+          const enrollment = (userData.enrolledCourses || []).find(
+            (ec) => String(ec.courseId?._id || ec.courseId) === String(navData.courseId)
+          );
+          if (enrollment?.completedLessons) {
+            setNavCompleted(enrollment.completedLessons.map((cl) => String(cl._id || cl)));
+          }
+        }
+      }
+    } catch (err) {
+      console.error("Could not load lesson navigation", err);
     }
   }
 
@@ -441,7 +500,47 @@ export default function Lesson() {
           <div className="play-btn" onClick={() => { setStarted(true); setoverlay(true); }}></div>
         </div>
       )}
-      <Sidebar title={`${mtitle}:${lessonData.title}`} styles={"#a855f7"} />
+      <Sidebar title={`${mtitle}:${lessonData.title}`} styles={"#a855f7"}>
+        <button className="lesson-list-toggle" onClick={() => setShowLessonList(true)} title="Course lessons">
+          <FaListUl size={14} /> Lessons
+        </button>
+      </Sidebar>
+
+      {/* Slide-in course lesson list */}
+      {showLessonList && (
+        <div className="lesson-list-backdrop" onClick={() => setShowLessonList(false)}>
+          <div className="lesson-list-panel" onClick={(e) => e.stopPropagation()}>
+            <div className="llp-head">
+              <span>{courseNav?.courseTitle || "Course Lessons"}</span>
+              <FaTimes style={{ cursor: "pointer" }} onClick={() => setShowLessonList(false)} />
+            </div>
+            <div className="llp-body">
+              {(courseNav?.modules || []).map((m, mi) => (
+                <div key={mi} className="llp-module">
+                  <div className="llp-module-title">{m.title}</div>
+                  {[...new Map((m.lessons || []).map((l) => [String(l.lessonId?._id || l.lessonId), l])).values()].map((l, li) => {
+                    const id = String(l.lessonId?._id || l.lessonId);
+                    const isActive = id === String(lessonID);
+                    const isDone = navCompleted.includes(id);
+                    return (
+                      <div
+                        key={li}
+                        className={`llp-lesson ${isActive ? "active" : ""}`}
+                        onClick={() => (isActive ? setShowLessonList(false) : goToLesson({ id, title: l.title, moduleTitle: m.title }))}
+                      >
+                        <span className={`llp-status ${isDone ? "done" : ""}`}>{isDone ? "✓" : "○"}</span>
+                        <span className="llp-lesson-title">{l.title}</span>
+                        {isActive && <span className="llp-now">▶</span>}
+                      </div>
+                    );
+                  })}
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="createLesson-container">
         <div className='createlesson'>
           <div className='editor-container'>
@@ -615,6 +714,26 @@ export default function Lesson() {
                 {s}x
               </button>
             ))}
+          </div>
+
+          {/* Prev / Next lesson navigation */}
+          <div style={{ display: "flex", gap: "8px", marginLeft: 16, whiteSpace: "nowrap" }}>
+            <button
+              onClick={() => goToLesson(prevLesson)}
+              disabled={!prevLesson}
+              title={prevLesson ? `Previous: ${prevLesson.title}` : "No previous lesson"}
+              style={{ display: "inline-flex", alignItems: "center", gap: 6, backgroundColor: prevLesson ? "#374151" : "#1f2937", border: "none", color: prevLesson ? "white" : "#6b7280", padding: "6px 12px", borderRadius: "4px", cursor: prevLesson ? "pointer" : "not-allowed" }}
+            >
+              <FaChevronLeft size={12} /> Prev
+            </button>
+            <button
+              onClick={() => goToLesson(nextLesson)}
+              disabled={!nextLesson}
+              title={nextLesson ? `Next: ${nextLesson.title}` : "No next lesson"}
+              style={{ display: "inline-flex", alignItems: "center", gap: 6, backgroundColor: nextLesson ? "#a855f7" : "#1f2937", border: "none", color: nextLesson ? "white" : "#6b7280", padding: "6px 12px", borderRadius: "4px", cursor: nextLesson ? "pointer" : "not-allowed", fontWeight: 600 }}
+            >
+              Next <FaChevronRight size={12} />
+            </button>
           </div>
         </div>
       </div>

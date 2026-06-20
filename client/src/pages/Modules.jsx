@@ -1,5 +1,5 @@
 import React from 'react'
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import Sidebar from '../components/sidebar';
 import CourseReviews from '../components/CourseReviews';
@@ -74,14 +74,17 @@ export default function Modules() {
         .catch(error => console.error("Error fetching modules:", error));
 
         const currentRole = localStorage.getItem("role");
+
+        // Auto-enroll only students when they visit a course
         if (token && currentRole !== "instructor" && currentRole !== "admin") {
-            // Auto-enroll when student visits course
             fetch(`http://localhost:5000/api/course/${courseId}/enroll`, {
                 method: "POST",
                 headers: { Authorization: `Bearer ${token}` }
             }).catch(console.error);
+        }
 
-            // Fetch User profile to get completed lessons
+        // Fetch completed lessons for ANY logged-in user so completion shows for everyone
+        if (token) {
             fetch(`http://localhost:5000/api/user/profilepage`, {
                 headers: { Authorization: `Bearer ${token}` }
             })
@@ -99,6 +102,37 @@ export default function Modules() {
             .catch(err => console.error("Could not fetch user profile", err));
         }
     }, [courseId]);
+
+    // Flatten lessons in display order to find the next one to learn
+    const orderedLessons = useMemo(() => {
+        const list = [];
+        modules.forEach((m, mi) => {
+            const seen = new Set();
+            (m.lessons || []).forEach(l => {
+                const id = String(l.lessonId?._id || l.lessonId);
+                if (seen.has(id)) return;
+                seen.add(id);
+                list.push({ id, moduleIndex: mi });
+            });
+        });
+        return list;
+    }, [modules]);
+
+    // The current lesson = first lesson not yet completed (null if all done)
+    const currentLesson = useMemo(
+        () => orderedLessons.find(l => !completedLessons.includes(l.id)) || null,
+        [orderedLessons, completedLessons]
+    );
+    const notStarted = completedLessons.length === 0;
+
+    // Auto-expand the module holding the next lesson (or the first module) once data loads
+    const autoOpenedRef = useRef(false);
+    useEffect(() => {
+        if (!autoOpenedRef.current && modules.length > 0) {
+            setOpen(currentLesson ? currentLesson.moduleIndex : 0);
+            autoOpenedRef.current = true;
+        }
+    }, [modules, currentLesson]);
 
         const openLesson=(lessonId,title)=>{
           console.log("Opening lesson with ID:", lessonId);
@@ -247,17 +281,28 @@ export default function Modules() {
               {[...new Map(module.lessons.map(l => [String(l.lessonId?._id || l.lessonId), l])).values()].map((lesson, i) => {
                 const lessonIdString = String(lesson.lessonId?._id || lesson.lessonId);
                 const isCompleted = completedLessons.includes(lessonIdString);
-                
+                const isCurrent = !isOwner && currentLesson && lessonIdString === currentLesson.id;
+
                 return (
                 <li
                   key={i}
+                  className={`${isCurrent ? 'current-lesson' : ''} ${isCompleted ? 'completed-lesson' : ''}`.trim()}
                   onClick={() => openLesson(lesson.lessonId, module.title)}
                   style={{cursor: 'pointer'}}
                 >
                   <div style={{display: 'flex', alignItems: 'center', gap: '12px'}}>
-                    <div style={{width: 8, height: 8, borderRadius: '50%', background: isCompleted ? '#4ade80' : '#cbd5e1'}}></div>
-                    <span className='lesson-title' style={{fontWeight: 600, color: isCompleted ? '#4ade80' : '#fff'}}>{lesson.title}</span>
-                    {isCompleted && <span style={{color: '#4ade80', fontSize: '1.2rem', marginLeft: '5px'}}>✓</span>}
+                    {isCompleted ? (
+                      <span className="lesson-check">✓</span>
+                    ) : (
+                      <div style={{width: isCurrent ? 12 : 8, height: isCurrent ? 12 : 8, borderRadius: '50%', background: isCurrent ? '#a855f7' : '#cbd5e1'}}></div>
+                    )}
+                    <span className='lesson-title' style={{fontWeight: isCurrent ? 800 : 600, fontSize: isCurrent ? '1.15rem' : '1rem', color: isCompleted ? '#4ade80' : '#fff'}}>{lesson.title}</span>
+                    {isCompleted && <span className="completed-badge">✓ Completed</span>}
+                    {isCurrent && (
+                      <span className="continue-badge">
+                        ▶ {notStarted ? 'Start here' : 'Continue'}
+                      </span>
+                    )}
                   </div>
                   <span style={{color: '#94a3b8', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '15px'}}>
                     {lesson.videoLength}s
