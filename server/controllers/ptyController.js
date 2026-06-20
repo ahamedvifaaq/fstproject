@@ -70,6 +70,7 @@ export const setupPtySocket = (io) => {
 
         ptyProcess.on("exit", (exitCode) => {
           socket.emit("output", `\r\n\x1b[33m--- Process exited with code ${exitCode} ---\x1b[0m\r\n`);
+          socket.emit("run_exit", exitCode); // lets the client finalize a run-history entry
           ptyProcess = null;
           // Cleanup files
           if (tempFilePath && fs.existsSync(tempFilePath)) {

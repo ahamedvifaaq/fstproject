@@ -39,6 +39,15 @@ export default function Lesson() {
   const terminalRef = useRef(null);
   const xtermRef = useRef(null);
 
+  // ── Run history (code tracking) ──────────────────────────────────────
+  const [runHistory, setRunHistory] = useState([]);
+  const [showHistory, setShowHistory] = useState(true);
+  const runOutputRef = useRef("");   // accumulates this run's terminal output
+  const activeRunRef = useRef(null);  // { code, language, time } of the run in progress
+
+  // Strip ANSI escape codes so stored/displayed output is readable
+  const stripAnsi = (s) => (s || "").replace(/\x1b\[[0-9;?]*[ -/]*[@-~]/g, "");
+
   const getAudioUrl = (url) => {
     if (!url || url === "not working") return null;
     if (url.startsWith("http") || url.startsWith("blob:")) return url;
@@ -192,6 +201,19 @@ export default function Lesson() {
     lessonDataRef.current = data; // ✅ keep ref in sync
     initAudio(data.audioUrl);    // ✅ init audio once data is loaded
     console.log("Fetched lesson data:", data);
+
+    // Load this student's previous run history for the lesson
+    try {
+      const runRes = await fetch(`http://localhost:5000/api/user/lesson/${lessonID}/runs`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (runRes.ok) {
+        const runData = await runRes.json();
+        setRunHistory(Array.isArray(runData.runs) ? runData.runs : []);
+      }
+    } catch (err) {
+      console.error("Could not load run history", err);
+    }
   }
 
   useEffect(() => {
@@ -245,9 +267,36 @@ export default function Lesson() {
 
     // Initialize Socket
     socketRef.current = io("http://localhost:5000");
-    
+
     socketRef.current.on("output", (data) => {
       term.write(data);
+      // Buffer output for the run currently in progress
+      if (activeRunRef.current) runOutputRef.current += data;
+    });
+
+    // A run finished — finalize a history entry and persist it
+    socketRef.current.on("run_exit", (exitCode) => {
+      setIsRunning(false);
+      const active = activeRunRef.current;
+      if (!active) return;
+      const entry = {
+        code: active.code,
+        language: active.language,
+        output: stripAnsi(runOutputRef.current),
+        exitCode,
+        createdAt: new Date().toISOString()
+      };
+      setRunHistory((prev) => [entry, ...prev].slice(0, 50));
+      activeRunRef.current = null;
+
+      const token = localStorage.getItem("accessToken");
+      if (token) {
+        fetch(`http://localhost:5000/api/user/lesson/${lessonID}/run`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+          body: JSON.stringify(entry)
+        }).catch((err) => console.error("Could not save run history", err));
+      }
     });
 
     term.onData((data) => {
@@ -367,12 +416,23 @@ export default function Lesson() {
       xtermRef.current.clear();
       xtermRef.current.writeln("\x1b[33mStarting Interactive Session...\x1b[0m");
     }
-    try {
-      socketRef.current?.emit("run_code", { code: currentcode.current, language: lessonData.language || "javascript" });
-    } finally {
-      setIsRunning(false);
-    }
+    // Begin tracking this run for the history log
+    runOutputRef.current = "";
+    activeRunRef.current = {
+      code: currentcode.current || "",
+      language: lessonData.language || "javascript",
+      time: new Date().toISOString()
+    };
+    socketRef.current?.emit("run_code", { code: currentcode.current, language: lessonData.language || "javascript" });
+    setIsRunning(false);
   }
+
+  // Reload a previous run's code back into the editor
+  const loadRunCode = (run) => {
+    setStarted(false);     // pause so the timeline doesn't overwrite the loaded code
+    setCode(run.code);
+    currentcode.current = run.code;
+  };
 
   return (
     <div>
@@ -460,6 +520,50 @@ export default function Lesson() {
               </div>
               
               <div ref={terminalRef} style={{ width: "100%", height: "100%", flexGrow: 1, padding: "10px", paddingLeft: "15px" }}></div>
+            </div>
+
+            {/* ── Run History (code tracking) ── */}
+            <div className="run-history">
+              <div className="run-history-head" onClick={() => setShowHistory((v) => !v)}>
+                <span>🧾 Run History ({runHistory.length})</span>
+                <span className="rh-toggle">{showHistory ? "▲" : "▼"}</span>
+              </div>
+
+              {showHistory && (
+                <div className="run-history-list">
+                  {runHistory.length === 0 ? (
+                    <p className="rh-empty">No runs yet. Run your code to start tracking your work.</p>
+                  ) : (
+                    runHistory.map((run, i) => (
+                      <div
+                        key={run._id || i}
+                        className="rh-item"
+                        title="Click to load this code into the editor"
+                        onClick={() => loadRunCode(run)}
+                      >
+                        <div className="rh-item-head">
+                          <span className="rh-time">
+                            {new Date(run.createdAt).toLocaleString()}
+                          </span>
+                          <span className={`rh-exit ${run.exitCode === 0 ? "ok" : "fail"}`}>
+                            {run.exitCode === 0 ? "✓ exit 0" : `exit ${run.exitCode ?? "?"}`}
+                          </span>
+                        </div>
+                        <pre className="rh-code">
+                          {(run.code || "").split("\n").slice(0, 2).join("\n") || "// (empty)"}
+                          {(run.code || "").split("\n").length > 2 ? "\n…" : ""}
+                        </pre>
+                        {run.output && (
+                          <pre className="rh-output">
+                            {stripAnsi(run.output).trim().slice(0, 220)}
+                            {stripAnsi(run.output).trim().length > 220 ? "…" : ""}
+                          </pre>
+                        )}
+                      </div>
+                    ))
+                  )}
+                </div>
+              )}
             </div>
           </div>
         </div>

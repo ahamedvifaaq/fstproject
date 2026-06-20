@@ -1,7 +1,59 @@
 import User from "../models/User.js";
 import Course from "../models/Course.js";
 import Review from "../models/Review.js";
+import CodeRun from "../models/CodeRun.js";
 import bcrypt from "bcryptjs";
+
+const MAX_RUNS_PER_LESSON = 50;
+
+// Save one code run for the current student in a lesson (run-history log)
+export const saveCodeRun = async (req, res) => {
+    try {
+        const { lessonId } = req.params;
+        let { code = "", output = "", language = "javascript", exitCode = null } = req.body;
+
+        // Guard against storing huge payloads
+        if (typeof output === "string" && output.length > 8000) output = output.slice(0, 8000);
+        if (typeof code === "string" && code.length > 20000) code = code.slice(0, 20000);
+
+        const run = await CodeRun.create({
+            userId: req.user.id,
+            lessonId,
+            code,
+            output,
+            language,
+            exitCode
+        });
+
+        // Keep only the most recent runs per user/lesson
+        const old = await CodeRun.find({ userId: req.user.id, lessonId })
+            .sort({ createdAt: -1 })
+            .skip(MAX_RUNS_PER_LESSON)
+            .select("_id");
+        if (old.length) {
+            await CodeRun.deleteMany({ _id: { $in: old.map(o => o._id) } });
+        }
+
+        res.status(201).json({ message: "Run saved", run });
+    } catch (err) {
+        console.error("Save code run error:", err);
+        res.status(500).json({ message: err.message });
+    }
+};
+
+// Get the current student's run history for a lesson (newest first)
+export const getCodeRuns = async (req, res) => {
+    try {
+        const { lessonId } = req.params;
+        const runs = await CodeRun.find({ userId: req.user.id, lessonId })
+            .sort({ createdAt: -1 })
+            .limit(MAX_RUNS_PER_LESSON);
+        res.status(200).json({ runs });
+    } catch (err) {
+        console.error("Get code runs error:", err);
+        res.status(500).json({ message: err.message });
+    }
+};
 export const getProfile = async (req, res) => {
     try {
         const user = await User.findById(req.user.id)
